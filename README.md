@@ -10,6 +10,13 @@ query-constructor
 * Serializer
 * client
 
+Установка
+---------
+
+```
+composer require informika/query-constructor
+```
+
 Набор инструментов
 -------------
 
