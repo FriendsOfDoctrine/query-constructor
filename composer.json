@@ -1,0 +1,16 @@
+{
+    "name": "informika/query-constructor",
+    "description": "GUI & serializer for Doctrine ORM QueryBuilder",
+    "keywords": ["doctrine"],
+    "type": "library",
+    "require": {
+        "php": "^7.0",
+        "doctrine/orm": "^2.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Informika\\QueryConstructor\\": "src/"
+        }
+    }
+}
