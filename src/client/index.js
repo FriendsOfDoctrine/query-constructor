@@ -11,7 +11,7 @@ function makeStateFromProps(props) {
   initialState.select.data.aggregates = clone(props.aggregateFunctions) || {'': 'Ошибка загрузки'};
   initialState.select.data.entities = clone(props.entities) || {'': 'Ошибка загрузки'};
   initialState.select.values.aggregateFn = props.aggregateFunctions ? Object.keys(props.aggregateFunctions)[0] : '';
-  initialState.select.propertiesUrl = initialState.where.propertiesUrl = props.propertiesUrl || '';
+  initialState.api.url = props.propertiesUrl || '';
   return initialState;
 }
 

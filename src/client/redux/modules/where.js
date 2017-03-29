@@ -1,6 +1,5 @@
 import { clone } from '../../util/helpers'
-import callApi from '../../util/apiCaller'
-import { set as setCache } from './apiCache'
+import { load } from './api'
 import { uniqueId } from 'lodash'
 
 const CLEAR_ALL = 'queryConstructor/where/CLEAR_ALL';
@@ -8,9 +7,7 @@ const ADD = 'queryConstructor/where/ADD';
 const REMOVE = 'queryConstructor/where/REMOVE';
 const SET_VALUE = 'queryConstructor/where/SET_VALUE';
 const CHANGE_PROPERTY = 'queryConstructor/where/CHANGE_PROPERTY';
-const LOAD = 'queryConstructor/where/LOAD'
-const LOAD_SUCCESS = 'queryConstructor/where/LOAD_SUCCESS'
-const LOAD_FAIL= 'queryConstructor/where/LOAD_FAIL'
+const LOAD_PROPERTIES = 'queryConstructor/where/LOAD_PROPERTIES';
 
 const propertyTypes = {
   'integer': {
@@ -104,7 +101,7 @@ const initialItemState = {
 
 const itemReducer = (state = initialItemState, action) => {
   switch (action.type) {
-    case LOAD_SUCCESS: {
+    case LOAD_PROPERTIES: {
       const whereItem = clone(state);
       whereItem.data.properties = clone(action.data);
       return whereItem;
@@ -188,7 +185,7 @@ export default function reducer(state = initialState, action = {}) {
         ...state,
         items: state.items.filter((where, i) => i !== action.indexWhere)
       };
-    case LOAD_SUCCESS:
+    case LOAD_PROPERTIES:
     case CHANGE_PROPERTY:
     case SET_VALUE:
       return {
@@ -225,9 +222,9 @@ export function clearAllWhere(entity) {
       const defaultEntity = {};
       defaultEntity[entity] = state.select.data.entities[entity];
       data.entity = entity;
-      if (state.apiCache[entity]) {
-        data.properties = state.apiCache[entity].properties;
-        data.entities = Object.assign({}, defaultEntity, state.apiCache[entity].joinableEntities);
+      if (state.api.cache[entity]) {
+        data.properties = state.api.cache[entity].properties;
+        data.entities = Object.assign({}, defaultEntity, state.api.cache[entity].joinableEntities);
       }
     }
 
@@ -255,32 +252,9 @@ export function setValue(indexWhere, name, value) {
 
 function loadProperties(indexWhere, entity) {
   return (dispatch, getState) => {
-    const setProperties = (properties) => {
-      dispatch({ type: LOAD_SUCCESS, indexWhere, data: properties });
+    load(dispatch, getState, entity).then(data => {
+      dispatch({ type: LOAD_PROPERTIES, indexWhere, data: data ? data.properties : {} });
       dispatch(changePropertyWhere(indexWhere, null));
-    };
-    const state = getState();
-
-    if (state.apiCache[entity]) {
-      setProperties(state.apiCache[entity].properties);
-    } else if (entity) {
-      dispatch({ type: LOAD, indexWhere });
-
-      callApi(state.where.propertiesUrl + '?entity=' + entity)
-        .then(data => {
-          if (data && data.result && data.result === 'success') {
-            dispatch(setCache(entity, data.properties));
-            setProperties(data.properties.properties);
-          } else {
-            if (data && data.message) {
-              dispatch({ type: LOAD_FAIL, indexWhere, error: data.message });
-            } else {
-              dispatch({ type: LOAD_FAIL, indexWhere, error: 'Неопределенная ошибка' });
-            }
-          }
-        });
-    } else {
-      setProperties({});
-    }
+    });
   }
 }

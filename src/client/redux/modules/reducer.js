@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import apiCache from './apiCache'
+import api from './api'
 import select from './select'
 import where from './where'
 import callApi from '../../util/apiCaller'
@@ -8,7 +8,7 @@ import { clone } from '../../util/helpers'
 const reducer = combineReducers({
   select,
   where,
-  apiCache,
+  api,
 });
 
 export default reducer;
