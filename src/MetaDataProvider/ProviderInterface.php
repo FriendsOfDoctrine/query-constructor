@@ -74,6 +74,6 @@ interface ProviderInterface
      * @param string $entitySelectAlias
      * @param \DateTime $dateReport
      */
-    public function onQueryCreated(QueryBuilder $qb, string $entitySelectAlias, \DateTime $dateReport);
+    public function onQueryCreated(QueryBuilder $qb, $entitySelectAlias, \DateTime $dateReport);
 
 }

@@ -53,7 +53,7 @@ class Serializer
      *
      * @return QueryBuilder
      */
-    public function unserialize(string $serialized)
+    public function unserialize($serialized)
     {
         $result = unserialize($serialized);
 

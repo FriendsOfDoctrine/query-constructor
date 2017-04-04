@@ -76,7 +76,7 @@ class Creator
      * @return \Doctrine\ORM\QueryBuilder
      * @throws CreatorException
      */
-    public function createFromJson(string $value, \DateTime $dateReport = null)
+    public function createFromJson($value, \DateTime $dateReport = null)
     {
         if (!$dateReport) {
             $dateReport = new \DateTime();

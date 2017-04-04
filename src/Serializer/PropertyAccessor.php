@@ -50,7 +50,7 @@ class PropertyAccessor
      * @throws \LogicException
      * @throws \BadMethodCallException
      */
-    public function setValue(string $name, $value)
+    public function setValue($name, $value)
     {
         if ($mutator = $this->getPublicProperty($name)) {
             $this->object->{$mutator} = $value;
@@ -72,7 +72,7 @@ class PropertyAccessor
      * @throws \LogicException
      * @throws \BadMethodCallException
      */
-    public function getValue(string $name)
+    public function getValue($name)
     {
         if ($accessor = $this->getPublicProperty($name)) {
             return $this->object->{$accessor};
@@ -92,7 +92,7 @@ class PropertyAccessor
      *
      * @return string|null
      */
-    protected function getPublicProperty(string $name)
+    protected function getPublicProperty($name)
     {
         try {
             $property = $this->reflection->getProperty($name);
@@ -108,7 +108,7 @@ class PropertyAccessor
      *
      * @return string|null
      */
-    protected function getPublicMethod(string $property, string $prefix)
+    protected function getPublicMethod($property, $prefix)
     {
         $name = $prefix . ucfirst($property);
         try {
@@ -125,7 +125,7 @@ class PropertyAccessor
      *
      * @return string|null
      */
-    protected function getFirstPublicMethod(string $property, array $prefixes)
+    protected function getFirstPublicMethod($property, array $prefixes)
     {
         foreach ($prefixes as $prefix) {
             if ($method = $this->getPublicMethod($property, $prefix)) {

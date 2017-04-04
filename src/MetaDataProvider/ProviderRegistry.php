@@ -43,7 +43,7 @@ class ProviderRegistry
      * @return array
      * @throws \LogicException
      */
-    public function get(string $entity)
+    public function get($entity)
     {
         if (!isset($this->entities[$entity])) {
             throw new \LogicException('Entity [' . $entity . '] not registered');
@@ -54,7 +54,7 @@ class ProviderRegistry
             'properties' => $this->entities[$entity]->getProperties(),
             'joinableEntities' => array_reduce(
                 array_keys($this->entities[$entity]->getJoinableEntities()),
-                function (array $entityMap, string $entityClass) {
+                function (array $entityMap, $entityClass) {
                     $entityMap[$entityClass] = $this->entities[$entityClass]->getEntityTitle();
                     return $entityMap;
                 },
@@ -69,7 +69,7 @@ class ProviderRegistry
      * @return ProviderInterface
      * @throws \LogicException
      */
-    public function getProvider(string $entity)
+    public function getProvider($entity)
     {
         if (!isset($this->entities[$entity])) {
             throw new \LogicException('Entity [' . $entity . '] not registered');
@@ -84,7 +84,7 @@ class ProviderRegistry
      * @param string $entityAlias
      * @param \DateTime $dateReport
      */
-    public function onQueryCreated(QueryBuilder $qb, string $entityClass, string $entityAlias, \DateTime $dateReport)
+    public function onQueryCreated(QueryBuilder $qb, $entityClass, $entityAlias, \DateTime $dateReport)
     {
         if (!isset($this->entities[$entityClass])) {
             throw new \LogicException('Entity [' . $entityClass . '] not registered');

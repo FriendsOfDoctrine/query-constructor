@@ -3,19 +3,18 @@ query-constructor
 
 Набор инструментов по созданию экземпляра Doctrine QueryBuilder через графический интерфейс с возможностью его сериализации/десериализации.
 
-Входят следующие средства:
+Входят следующие инструменты:
 
 * Creator
 * MetaDataProvider
 * Serializer
 * client
 
-Установка
----------
+Требования
+----------
 
-```
-composer require informika/query-constructor
-```
+1. PHP 5.4+
+2. Doctrine/ORM 2.5+
 
 Набор инструментов
 -------------
@@ -24,26 +23,30 @@ composer require informika/query-constructor
 
 Создаёт экземпляр Doctrine QueryBuilder из JSON
 
-#### Формат JSON (пример)
+#### Формат JSON
 
 ```json
 {
-    "aggregateFunction": "COUNT", // required: COUNT|SUM|MIN|MAX|AVG
-    "entity": "MyClass1", // required
-    "property": "id" // required
+    "aggregateFunction": "COUNT",
+    "entity": "MyClass1",
+    "property": "id"
     "conditions": [
         {
-            "type": "NONE", // required: NONE|AND|OR
+            "type": "NONE",
             "entity": "MyClass2",
-            "property": "name", // required
-            "operator": "=", // required
-            "value": "John" // required
+            "property": "name",
+            "operator": "=",
+            "value": "John"
         }
     ]
 }
 ```
 
-Допустимые `entity`, `property` определяются из зарегеистрированных провайдеров (см. `MetaDataProvider`)
+Массив `conditions[]` может быть пустым.
+Все поля, кроме `conditions[].entity` - обязательные.
+Допустимые значения `aggregateFunction` - `COUNT`, `SUM`, `MIN`, `MAX`, `AVG`.
+Допустимые значения `conditions[].type` - `NONE`, `AND`, `OR`.
+Допустимые `entity`, `property` определяются из зарегеистрированных провайдеров (см. `MetaDataProvider`).
 
 ### MetaDataProvider
 
@@ -74,6 +77,7 @@ React-компонент конструктора запросов
 2. Добавить в конфигурацию загрузчика babel путь к query-constructor/client
 3. Создать symlink на query-constructor/client в папке с исходниками React основного проекта
 4. В компоненте проекта импортировать компонент `QueryConstructor` из index.js
+5. Пересобрать js с новым компонентом сборщиком, используемым на проекте
 
 #### Настройка QueryConstructor
 Требуются следующие параметры:
@@ -362,10 +366,11 @@ $queryBuilder = $this->get('query_constructor.creator')->createFromJson($formPar
 
 ### Сохранение QueryBuilder в БД
 ```php
-$entity->setSqlFilter(addslashes($this->get('query_constructor.serializer')->serialize(queryBuilder)));
+$entity->setSqlFilter(addslashes($this->get('query_constructor.serializer')->serialize($queryBuilder)));
 ```
 
 ### Восстановление QueryBuilder из БД
+Например, сериализованный QueryBuilder возвращается `$entity->getSqlFilter()`:
 ```php
-$queryBuilder = $this->get('query_constructor.serializer')->unserialize(stripslashes($$entity->getSqlFilter()));
+$queryBuilder = $this->get('query_constructor.serializer')->unserialize(stripslashes($entity->getSqlFilter()));
 ```

@@ -44,7 +44,7 @@ class Joiner
      *
      * @return string
      */
-    public function getEntityAlias(string $entityClass)
+    public function getEntityAlias($entityClass)
     {
         return substr(strrchr($entityClass, "\\"), 1);
     }
@@ -52,7 +52,7 @@ class Joiner
     /**
      * @param string $entityClass
      */
-    public function setBaseEntity(string $entityClass)
+    public function setBaseEntity($entityClass)
     {
         $this->baseEntityMetadataProvider = $this->metadataHelper->getProvider($entityClass);
     }
@@ -65,7 +65,7 @@ class Joiner
      * @return string
      * @throws \LogicException
      */
-    public function join(QueryBuilder $qb, string $entityClass, \DateTime $dateReport = null)
+    public function join(QueryBuilder $qb, $entityClass, \DateTime $dateReport = null)
     {
         if (!$this->baseEntityMetadataProvider) {
             throw new \LogicException('BaseEntityMetadataProvider is not set. Call setBaseEntity() method first.');
@@ -88,8 +88,8 @@ class Joiner
         if (is_array($relation)) {
             array_reduce($relation, function (
                 ProviderInterface $provider,
-                string $entityClass
-            ) use ($qb, $dateReport): ProviderInterface {
+                $entityClass
+            ) use ($qb, $dateReport) {
                 $relation = $provider->getJoinableEntities()[$entityClass];
                 if (is_array($relation)) {
                     throw \LogicException('Recursion not supported');
@@ -130,9 +130,9 @@ class Joiner
      */
     protected function makeJoin(
         QueryBuilder $qb,
-        string $entityClass,
-        string $entityBaseAlias,
-        string $referenceKey,
+        $entityClass,
+        $entityBaseAlias,
+        $referenceKey,
         \DateTime $dateReport
     )
     {
@@ -169,7 +169,7 @@ class Joiner
      *
      * @return bool
      */
-    protected function alreadyJoined(QueryBuilder $qb, string $entityAlias)
+    protected function alreadyJoined(QueryBuilder $qb, $entityAlias)
     {
         return in_array($entityAlias, $qb->getAllAliases());
     }
