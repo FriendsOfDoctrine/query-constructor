@@ -44,7 +44,7 @@ class Joiner
      *
      * @return string
      */
-    public function getEntityAlias(string $entityClass): string
+    public function getEntityAlias(string $entityClass)
     {
         return substr(strrchr($entityClass, "\\"), 1);
     }
@@ -65,7 +65,7 @@ class Joiner
      * @return string
      * @throws \LogicException
      */
-    public function join(QueryBuilder $qb, string $entityClass, \DateTime $dateReport = null): string
+    public function join(QueryBuilder $qb, string $entityClass, \DateTime $dateReport = null)
     {
         if (!$this->baseEntityMetadataProvider) {
             throw new \LogicException('BaseEntityMetadataProvider is not set. Call setBaseEntity() method first.');
@@ -134,7 +134,7 @@ class Joiner
         string $entityBaseAlias,
         string $referenceKey,
         \DateTime $dateReport
-    ): string
+    )
     {
         $entityAlias = $this->getEntityAlias($entityClass);
 
@@ -169,7 +169,7 @@ class Joiner
      *
      * @return bool
      */
-    protected function alreadyJoined(QueryBuilder $qb, string $entityAlias): bool
+    protected function alreadyJoined(QueryBuilder $qb, string $entityAlias)
     {
         return in_array($entityAlias, $qb->getAllAliases());
     }

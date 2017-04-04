@@ -30,7 +30,7 @@ class Serializer
      *
      * @return string
      */
-    public function serialize(QueryBuilder $queryBuilder): string
+    public function serialize(QueryBuilder $queryBuilder)
     {
         $queryBuilderAccessor = new PropertyAccessor($queryBuilder);
         $data = [
@@ -53,7 +53,7 @@ class Serializer
      *
      * @return QueryBuilder
      */
-    public function unserialize(string $serialized): QueryBuilder
+    public function unserialize(string $serialized)
     {
         $result = unserialize($serialized);
 
@@ -73,7 +73,7 @@ class Serializer
     /**
      * @return array
      */
-    protected function getSerializableAttributeNames(): array
+    protected function getSerializableAttributeNames()
     {
         // dqlParts has explicit access
         return [

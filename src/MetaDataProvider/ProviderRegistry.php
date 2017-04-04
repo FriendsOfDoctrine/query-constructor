@@ -69,7 +69,7 @@ class ProviderRegistry
      * @return ProviderInterface
      * @throws \LogicException
      */
-    public function getProvider(string $entity): ProviderInterface
+    public function getProvider(string $entity)
     {
         if (!isset($this->entities[$entity])) {
             throw new \LogicException('Entity [' . $entity . '] not registered');

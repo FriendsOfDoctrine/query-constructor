@@ -26,7 +26,7 @@ interface ProviderInterface
      *
      * @return array
      */
-    public function getAggregatableProperties(): array;
+    public function getAggregatableProperties();
 
     /**
      * ['field' =>
@@ -43,7 +43,7 @@ interface ProviderInterface
      *
      * @return array
      */
-    public function getProperties(): array;
+    public function getProperties();
 
     /**
      * Связи, которые можно запрашивать в условиях 
@@ -55,17 +55,17 @@ interface ProviderInterface
      *
      * @return array
      */
-    public function getJoinableEntities(): array;
+    public function getJoinableEntities();
 
     /**
      * @return string
      */
-    public function getEntityClass(): string;
+    public function getEntityClass();
 
     /**
      * @return string
      */
-    public function getEntityTitle(): string;
+    public function getEntityTitle();
 
     /**
      * Callback after query created

@@ -5,7 +5,6 @@ namespace Informika\QueryConstructor\Creator;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\QueryBuilder;
 use Informika\QueryConstructor\MetaDataProvider\ProviderRegistry;
 
 /**
@@ -77,7 +76,7 @@ class Creator
      * @return \Doctrine\ORM\QueryBuilder
      * @throws CreatorException
      */
-    public function createFromJson(string $value, \DateTime $dateReport = null): QueryBuilder
+    public function createFromJson(string $value, \DateTime $dateReport = null)
     {
         if (!$dateReport) {
             $dateReport = new \DateTime();
