@@ -69,8 +69,64 @@ class Reader
     {
         $propertyMetadata = new Property();
         $propertyMetadata->title = ucfirst($property->getName());
-        $propertyMetadata->type = Property::TYPE_STRING;
+        $phpdocPropertyType = $this->getPhpDocPropertyType($property);
+        $propertyMetadata->type = $this->mapPropertyTypeFromPhpDoc($phpdocPropertyType);
 
         return $propertyMetadata;
+    }
+
+    /**
+     * @param mixed $phpdocPropertyType
+     * @return string
+     */
+    protected function mapPropertyTypeFromPhpDoc($phpdocPropertyType)
+    {
+        switch ($phpdocPropertyType) {
+            case 'bool':
+            case 'boolean':
+            case 'int':
+            case 'integer':
+                return Property::TYPE_INTEGER;
+            case 'DateTime':
+            case '\DateTime':
+                return Property::TYPE_DATE;
+            default:
+                return Property::TYPE_STRING;
+        }
+    }
+
+    /**
+     * Get type of property from property declaration
+     *
+     * @link http://stackoverflow.com/a/34340504
+     *
+     * @param \ReflectionProperty $property
+     *
+     * @return null|string
+     */
+    protected function getPhpDocPropertyType(\ReflectionProperty $property)
+    {
+        $doc = $property->getDocComment();
+        preg_match_all('#@(.*?)\n#s', $doc, $annotations);
+        if (isset($annotations[1])) {
+            foreach ($annotations[1] as $annotation) {
+                preg_match_all('/\s*(.*?)\s+(\S*)/s', $annotation, $parts);
+                if (!isset($parts[1][0], $parts[2][0])) {
+                    continue;
+                }
+                $declaration = $parts[1][0];
+                $type = $parts[2][0];
+                if ($declaration === 'var') {
+                    if (substr($type, 0, 1) === '$') {
+                        return null;
+                    }
+                    else {
+                        return $type;
+                    }
+                }
+            }
+            return null;
+        }
+        return $doc;
     }
 }
