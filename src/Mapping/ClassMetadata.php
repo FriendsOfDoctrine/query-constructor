@@ -20,6 +20,11 @@ class ClassMetadata
     /**
      * @var Property[]
      */
+    protected $aggregatableProperties;
+
+    /**
+     * @var Property[]
+     */
     protected $properties;
 
     /**
@@ -36,6 +41,22 @@ class ClassMetadata
     public function getEntity()
     {
         return $this->entity;
+    }
+
+    /**
+     * @return Property[]
+     */
+    public function getAggregatableProperties()
+    {
+        return $this->aggregatableProperties;
+    }
+
+    /**
+     * @param array $properties
+     */
+    public function setAggregatableProperties(array $properties)
+    {
+        $this->aggregatableProperties = $properties;
     }
 
     /**

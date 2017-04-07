@@ -87,21 +87,37 @@ class Registry
         }
 
         return [
-            'aggregatableProperties' => $this->getPropertyTitles($entity),
-            'properties' => $entity->getProperties(),
+            'aggregatableProperties' => $this->getAggregatablePropertyTitles($entity),
+            'properties' => $this->getProperties($entity),
             'joinableEntities' => [],
         ];
     }
 
     /**
+     * @param ClassMetadata $entity
+     *
      * @return array
      */
-    public function getPropertyTitles(ClassMetadata $entity)
+    public function getAggregatablePropertyTitles(ClassMetadata $entity)
     {
         $ret = [];
-        foreach ($entity->getProperties() as $property => $metaData) {
+        foreach ($entity->getAggregatableProperties() as $property => $metaData) {
             $ret[$property] = $metaData->getTitle();
         }
+
+        asort($ret);
+
+        return $ret;
+    }
+
+    /**
+     * @param ClassMetadata $entity
+     *
+     * @return array
+     */
+    public function getProperties(ClassMetadata $entity)
+    {
+        $ret = $entity->getProperties();
 
         asort($ret);
 

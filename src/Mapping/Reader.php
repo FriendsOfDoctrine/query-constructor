@@ -41,18 +41,54 @@ class Reader
             return null;
         }
         $classMetadata = new ClassMetadata($entityMetadata);
-        $classMetadata->setProperties($this->fetchProperties($reflection));
+        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
+        $aggreagatbleProperties = $this->filterOnly($properties, $entityMetadata->getSelect());
+        $aggreagatbleProperties = $this->filterExcept($aggreagatbleProperties, $entityMetadata->getSelectExcept());
+        $classMetadata->setAggregatableProperties($this->fetchProperties($aggreagatbleProperties));
+
+        $classMetadata->setProperties($this->fetchProperties($properties));
 
         return $classMetadata;
     }
 
     /**
-     * @param \ReflectionClass $reflection
+     * @param array $properties
+     * @param array $names
      * @return array
      */
-    protected function fetchProperties(\ReflectionClass $reflection)
+    protected function filterOnly(array $properties, array $names = null)
     {
-        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
+        if ($names) {
+            return array_filter($properties, function (\ReflectionProperty $property) use ($names) {
+                return in_array($property->getName(), $names);
+            });
+        } else {
+            return $properties;
+        }
+    }
+
+    /**
+     * @param array $properties
+     * @param array $names
+     * @return array
+     */
+    protected function filterExcept(array $properties, array $names = null)
+    {
+        if ($names) {
+            return array_filter($properties, function (\ReflectionProperty $property) use ($names) {
+                return !in_array($property->getName(), $names);
+            });
+        } else {
+            return $properties;
+        }
+    }
+
+    /**
+     * @param array $properties
+     * @return array
+     */
+    protected function fetchProperties(array $properties)
+    {
         $result = [];
         foreach ($properties as $property) {
             $result[$property->getName()] = $this->makePropertyFromReflection($property);
