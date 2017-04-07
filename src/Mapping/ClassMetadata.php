@@ -3,6 +3,7 @@
 namespace Informika\QueryConstructor\Mapping;
 
 use Informika\QueryConstructor\Mapping\Annotation\Entity;
+use Informika\QueryConstructor\Mapping\Annotation\Property;
 
 /**
  * Metadata for Query Constructor
@@ -15,6 +16,11 @@ class ClassMetadata
      * @var Entity
      */
     protected $entity;
+
+    /**
+     * @var Property[]
+     */
+    protected $properties;
 
     /**
      * @param Entity $entity
@@ -30,5 +36,21 @@ class ClassMetadata
     public function getEntity()
     {
         return $this->entity;
+    }
+
+    /**
+     * @return Property[]
+     */
+    public function getProperties()
+    {
+        return $this->properties;
+    }
+
+    /**
+     * @param array $properties
+     */
+    public function setProperties(array $properties)
+    {
+        $this->properties = $properties;
     }
 }

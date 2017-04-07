@@ -3,6 +3,8 @@
 namespace Informika\QueryConstructor\Mapping;
 
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
+use Informika\QueryConstructor\Mapping\Annotation\Entity;
+use Informika\QueryConstructor\Mapping\Annotation\Property;
 
 /**
  * @author Nikita Pushkov
@@ -30,16 +32,45 @@ class Reader
      */
     public function getClassMetaData($className)
     {
+        $reflection = new \ReflectionClass($className);
         $entityMetadata = $this->reader->getClassAnnotation(
-            new \ReflectionClass($className),
-            Annotation\Entity::CLASSNAME
+            $reflection,
+            Entity::CLASSNAME
         );
-        if ($entityMetadata) {
-            $classMetadata = new ClassMetadata($entityMetadata);
+        if (!$entityMetadata) {
+            return null;
+        }
+        $classMetadata = new ClassMetadata($entityMetadata);
+        $classMetadata->setProperties($this->fetchProperties($reflection));
 
-            return $classMetadata;
+        return $classMetadata;
+    }
+
+    /**
+     * @param \ReflectionClass $reflection
+     * @return array
+     */
+    protected function fetchProperties(\ReflectionClass $reflection)
+    {
+        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
+        $result = [];
+        foreach ($properties as $property) {
+            $result[$property->getName()] = $this->makePropertyFromReflection($property);
         }
 
-        return null;
+        return $result;
+    }
+
+    /**
+     * @param \ReflectionProperty $property
+     * @return Property
+     */
+    protected function makePropertyFromReflection(\ReflectionProperty $property)
+    {
+        $propertyMetadata = new Property();
+        $propertyMetadata->title = ucfirst($property->getName());
+        $propertyMetadata->type = Property::TYPE_STRING;
+
+        return $propertyMetadata;
     }
 }

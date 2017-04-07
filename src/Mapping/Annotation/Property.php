@@ -6,9 +6,8 @@ use Doctrine\Common\Annotations\Annotation;
 
 /**
  * @Annotation
- * @Target("CLASS")
  */
-class Entity
+class Property
 {
     /**
      * @const string
@@ -16,11 +15,23 @@ class Entity
     const CLASSNAME = __CLASS__; // PHP5.4 support
 
     /**
-     * @Required
-     *
+     * @const string
+     */
+    const TYPE_STRING = 'string';
+    const TYPE_INTEGER = 'integer';
+    const TYPE_DATE = 'date';
+    const TYPE_SINGLE_CHOICE = 'single_choice';
+    const TYPE_MULTIPLE_CHOICE = 'multiple_choice';
+
+    /**
      * @var string
      */
     public $title;
+
+    /**
+     * @var string
+     */
+    public $type;
 
     /**
      * @return string

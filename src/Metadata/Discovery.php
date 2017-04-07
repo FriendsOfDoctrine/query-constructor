@@ -89,6 +89,15 @@ class Discovery
     }
 
     /**
+     * @param string $className
+     * @return \Informika\QueryConstructor\Mapping\ClassMetadata
+     */
+    public function getClassMetaData($className)
+    {
+        return $this->reader->getClassMetaData($className);
+    }
+
+    /**
      * @param string $path
      * @param \SplFileInfo $file
      * @return string
