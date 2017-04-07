@@ -16,9 +16,11 @@ class Entity
     const CLASSNAME = __CLASS__;
 
     /**
+     * @Required
+     *
      * @var string
      */
-    protected $label;
+    public $label;
 
     /**
      * @return string
