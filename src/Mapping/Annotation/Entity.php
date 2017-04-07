@@ -33,6 +33,16 @@ class Entity
     protected $selectExcept = [];
 
     /**
+     * @var array
+     */
+    protected $where = [];
+
+    /**
+     * @var array
+     */
+    protected $whereExcept = [];
+
+    /**
      * Constructor
      *
      * @param array $values
@@ -47,6 +57,12 @@ class Entity
         }
         if (array_key_exists('select_except', $values)) {
             $this->selectExcept = (array) $values['select_except'];
+        }
+        if (array_key_exists('where', $values)) {
+            $this->where = (array) $values['where'];
+        }
+        if (array_key_exists('where_except', $values)) {
+            $this->whereExcept = (array) $values['where_except'];
         }
     }
 
@@ -72,5 +88,21 @@ class Entity
     public function getSelectExcept()
     {
         return $this->selectExcept;
+    }
+
+    /**
+     * @return array
+     */
+    public function getWhere()
+    {
+        return $this->where;
+    }
+
+    /**
+     * @return array
+     */
+    public function getWhereExcept()
+    {
+        return $this->whereExcept;
     }
 }

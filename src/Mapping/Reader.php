@@ -42,13 +42,25 @@ class Reader
         }
         $classMetadata = new ClassMetadata($entityMetadata);
         $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
-        $aggreagatbleProperties = $this->filterOnly($properties, $entityMetadata->getSelect());
-        $aggreagatbleProperties = $this->filterExcept($aggreagatbleProperties, $entityMetadata->getSelectExcept());
+
+        $aggreagatbleProperties = $this->filterOnlyExcept($properties, $entityMetadata->getSelect(), $entityMetadata->getSelectExcept());
         $classMetadata->setAggregatableProperties($this->fetchProperties($aggreagatbleProperties));
 
-        $classMetadata->setProperties($this->fetchProperties($properties));
+        $whereProperties = $this->filterOnlyExcept($properties, $entityMetadata->getWhere(), $entityMetadata->getWhereExcept());
+        $classMetadata->setProperties($this->fetchProperties($whereProperties));
 
         return $classMetadata;
+    }
+
+    /**
+     * @param array $properties
+     * @param array $only
+     * @param array $except
+     * @return array
+     */
+    protected function filterOnlyExcept(array $properties, array $only, array $except)
+    {
+        return $this->filterExcept($this->filterOnly($properties, $only), $except);
     }
 
     /**
