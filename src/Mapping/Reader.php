@@ -115,10 +115,17 @@ class Reader
      */
     protected function makePropertyFromReflection(\ReflectionProperty $property)
     {
-        $propertyMetadata = new Property();
-        $propertyMetadata->title = ucfirst($property->getName());
-        $phpdocPropertyType = $this->getPhpDocPropertyType($property);
-        $propertyMetadata->type = $this->mapPropertyTypeFromPhpDoc($phpdocPropertyType);
+        $propertyMetadata = $this->reader->getPropertyAnnotation($property, Property::CLASSNAME);
+        if (!$propertyMetadata) {
+            $propertyMetadata = new Property();
+        }
+        if (!$propertyMetadata->title) {
+            $propertyMetadata->title = ucfirst($property->getName());
+        }
+        if (!$propertyMetadata->type) {
+            $phpdocPropertyType = $this->getPhpDocPropertyType($property);
+            $propertyMetadata->type = $this->mapPropertyTypeFromPhpDoc($phpdocPropertyType);
+        }
 
         return $propertyMetadata;
     }
