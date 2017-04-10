@@ -1,0 +1,38 @@
+services:
+    query_constructor.creator:
+        class: Informika\QueryConstructor\Creator\Creator
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@query_constructor.metadata_registry'
+            - '@query_constructor.joiner'
+
+    query_constructor.joiner:
+        class: Informika\QueryConstructor\Creator\Joiner
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@query_constructor.metadata_registry'
+
+    query_constructor.serializer:
+        class: Informika\QueryConstructor\Serializer\Serializer
+        arguments: ['@doctrine.orm.entity_manager']
+
+    query_constructor.metadata_registry:
+        class: Informika\QueryConstructor\MetaDataProvider\ProviderRegistry
+
+    query_constructor.registry:
+        class: Informika\QueryConstructor\Metadata\Registry
+        arguments: ['@query_constructor.discovery']
+
+    query_constructor.translator:
+        class: Informika\QueryConstructor\DBALTranslator\DBALTranslator
+        arguments: ['@doctrine.dbal.clickhouse_connection', '@informika.click_house.mapping.class_metadata_factory.annotation']
+
+    query_constructor.reader:
+        class: Informika\QueryConstructor\Mapping\Reader
+        arguments: ['@annotation_reader']
+
+    query_constructor.discovery:
+        class: Informika\QueryConstructor\Metadata\Discovery
+        arguments:
+            - '%kernel.root_dir%'
+            - '@query_constructor.reader'
