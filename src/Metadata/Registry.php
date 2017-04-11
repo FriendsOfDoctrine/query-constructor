@@ -16,7 +16,7 @@ class Registry
     /**
      * @var array
      */
-    protected $entities;
+    protected $metadataRegistry;
 
     /**
      * @var Discovery
@@ -38,7 +38,7 @@ class Registry
     public function getEntityTitles()
     {
         $ret = [];
-        foreach ($this->getEntities() as $entity => $metaData) {
+        foreach ($this->getMetadataRegistry() as $entity => $metaData) {
             $ret[$entity] = $metaData->getEntity()->getTitle();
         }
 
@@ -48,29 +48,29 @@ class Registry
     }
 
     /**
-     * @return array
+     * @return ClassMetadata
      */
-    public function getEntity($className)
+    public function getMetadata($className)
     {
-        if (empty($this->entitites[$className])) {
+        if (empty($this->metadataRegistry[$className])) {
             $classMetadata = $this->discovery->getClassMetaData($className);
             if (!$classMetadata) {
                 return null;
             }
-            $this->entitites[$className] = $classMetadata;
+            $this->metadataRegistry[$className] = $classMetadata;
         }
-        return $this->entitites[$className];
+        return $this->metadataRegistry[$className];
     }
 
     /**
      * @return array
      */
-    public function getEntities()
+    public function getMetadataRegistry()
     {
-        if (is_null($this->entities)) {
-            $this->entitites = $this->discovery->discoverAll();
+        if (is_null($this->metadataRegistry)) {
+            $this->metadataRegistry = $this->discovery->discoverAll();
         }
-        return $this->entitites;
+        return $this->metadataRegistry;
     }
 
     /**
@@ -81,7 +81,7 @@ class Registry
      */
     public function get($className)
     {
-        $entity = $this->getEntity($className);
+        $entity = $this->getMetadata($className);
         if (!$entity) {
             throw new \LogicException('Entity [' . $className . '] is not mapped as Constructor Entity');
         }
@@ -89,7 +89,7 @@ class Registry
         return [
             'aggregatableProperties' => $this->getAggregatablePropertyTitles($entity),
             'properties' => $this->getProperties($entity),
-            'joinableEntities' => [],
+            'joinableEntities' => $this->getJoins($entity),
         ];
     }
 
@@ -118,6 +118,27 @@ class Registry
     public function getProperties(ClassMetadata $entity)
     {
         $ret = $entity->getProperties();
+
+        asort($ret);
+
+        return $ret;
+    }
+
+    /**
+     * @param ClassMetadata $entity
+     *
+     * @return array
+     */
+    public function getJoins(ClassMetadata $entity)
+    {
+        $ret = array_reduce(
+            array_keys($entity->getJoins()),
+            function (array $entityMap, $entityClass) {
+                $entityMap[$entityClass] = $this->getMetadata($entityClass)->getEntity()->getTitle();
+                return $entityMap;
+            },
+            []
+        );
 
         asort($ret);
 

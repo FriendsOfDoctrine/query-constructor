@@ -18,6 +18,11 @@ class ClassMetadata
     protected $entity;
 
     /**
+     * @var array
+     */
+    protected $joins;
+
+    /**
      * @var Property[]
      */
     protected $aggregatableProperties;
@@ -73,5 +78,21 @@ class ClassMetadata
     public function setProperties(array $properties)
     {
         $this->properties = $properties;
+    }
+
+    /**
+     * @return Property[]
+     */
+    public function getJoins()
+    {
+        return $this->joins;
+    }
+
+    /**
+     * @param array $joins
+     */
+    public function setJoins(array $joins)
+    {
+        $this->joins = $joins;
     }
 }

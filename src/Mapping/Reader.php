@@ -49,6 +49,8 @@ class Reader
         $whereProperties = $this->filterOnlyExcept($properties, $entityMetadata->getWhere(), $entityMetadata->getWhereExcept());
         $classMetadata->setProperties($this->fetchProperties($whereProperties));
 
+        $classMetadata->setJoins($this->makeJoins($properties));
+
         return $classMetadata;
     }
 
@@ -183,5 +185,30 @@ class Reader
             return null;
         }
         return $doc;
+    }
+
+    /**
+     * @param array $properties
+     * @return array
+     */
+    protected function makeJoins(array $properties)
+    {
+        $result = [];
+
+        foreach ($properties as $property) {
+            $type = $this->getPhpDocPropertyType($property);
+            if (!($type && class_exists($type))) {
+                continue;
+            }
+            $entityMetadata = $this->reader->getClassAnnotation(
+                new \ReflectionClass($type),
+                Entity::CLASSNAME
+            );
+            if ($entityMetadata) {
+                $result[$type] = $property->getName();
+            }
+        }
+
+        return $result;
     }
 }
