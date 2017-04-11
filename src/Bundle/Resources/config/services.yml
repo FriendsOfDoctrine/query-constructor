@@ -29,7 +29,7 @@ services:
 
     query_constructor.reader:
         class: Informika\QueryConstructor\Mapping\Reader
-        arguments: ['@annotation_reader']
+        arguments: ['@doctrine.orm.entity_manager', '@annotation_reader']
 
     query_constructor.discovery:
         class: Informika\QueryConstructor\Metadata\Discovery

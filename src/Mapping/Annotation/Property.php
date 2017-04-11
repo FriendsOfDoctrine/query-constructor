@@ -34,6 +34,16 @@ class Property
     public $type;
 
     /**
+     * @var array (entity, value, title)
+     */
+    public $list;
+
+    /**
+     * @var array
+     */
+    public $choices;
+
+    /**
      * @return string
      */
     public function getTitle()

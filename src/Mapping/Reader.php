@@ -3,6 +3,7 @@
 namespace Informika\QueryConstructor\Mapping;
 
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
+use Doctrine\ORM\EntityManagerInterface;
 use Informika\QueryConstructor\Mapping\Annotation\Entity;
 use Informika\QueryConstructor\Mapping\Annotation\Property;
 
@@ -12,6 +13,11 @@ use Informika\QueryConstructor\Mapping\Annotation\Property;
 class Reader
 {
     /**
+     * @var EntityManagerInterface
+     */
+    protected $em;
+
+    /**
      * @var AnnotationReader
      */
     protected $reader;
@@ -19,10 +25,12 @@ class Reader
     /**
      * Constructor
      *
+     * @param EntityManagerInterface $em
      * @param AnnotationReader $reader
      */
-    public function __construct(AnnotationReader $reader)
+    public function __construct(EntityManagerInterface $em, AnnotationReader $reader)
     {
+        $this->em = $em;
         $this->reader = $reader;
     }
 
@@ -121,15 +129,49 @@ class Reader
         if (!$propertyMetadata) {
             $propertyMetadata = new Property();
         }
+
         if (!$propertyMetadata->title) {
             $propertyMetadata->title = ucfirst($property->getName());
         }
+
+        if (!$propertyMetadata->choices && isset($propertyMetadata->list['entity'], $propertyMetadata->list['value'], $propertyMetadata->list['title'])) {
+            $propertyMetadata->choices = $this->loadChoices($propertyMetadata->list['entity'], $propertyMetadata->list['value'], $propertyMetadata->list['title']);
+        }
+
         if (!$propertyMetadata->type) {
-            $phpdocPropertyType = $this->getPhpDocPropertyType($property);
-            $propertyMetadata->type = $this->mapPropertyTypeFromPhpDoc($phpdocPropertyType);
+            if (is_array($propertyMetadata->choices) && count($propertyMetadata->choices) > 0) {
+                $propertyMetadata->type = Property::TYPE_MULTIPLE_CHOICE;
+            } else {
+                $phpdocPropertyType = $this->getPhpDocPropertyType($property);
+                $propertyMetadata->type = $this->mapPropertyTypeFromPhpDoc($phpdocPropertyType);
+            }
         }
 
         return $propertyMetadata;
+    }
+
+    /**
+     * @param \Informika\QueryConstructor\Mapping\ClassMetadata $propertyMetadata
+     * @param \ReflectionProperty $property
+     * @return array
+     */
+    protected function loadChoices($className, $valueField, $titleField)
+    {
+        $resultSet = $this->em->createQueryBuilder()
+            ->select("PARTIAL e.{{$valueField}, {$titleField}}")
+            ->from($className, 'e')
+            ->getQuery()
+            ->getArrayResult();
+
+        // PHP5.4 support: instead of array_column($resultSet, $titleField, $valueField)
+        $resultMapped = array_reduce($resultSet, function (array $result, array $item) use ($valueField, $titleField) {
+            $result[$item[$valueField]] = $item[$titleField];
+            return $result;
+        }, []);
+
+        asort($resultMapped);
+
+        return $resultMapped;
     }
 
     /**
