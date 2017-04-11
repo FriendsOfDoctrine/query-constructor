@@ -3,14 +3,14 @@ services:
         class: Informika\QueryConstructor\Creator\Creator
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@query_constructor.metadata_registry'
+            - '@query_constructor.registry'
             - '@query_constructor.joiner'
 
     query_constructor.joiner:
         class: Informika\QueryConstructor\Creator\Joiner
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@query_constructor.metadata_registry'
+            - '@query_constructor.registry'
 
     query_constructor.serializer:
         class: Informika\QueryConstructor\Serializer\Serializer

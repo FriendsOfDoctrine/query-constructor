@@ -6,8 +6,8 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
-use Informika\QueryConstructor\MetaDataProvider\ProviderRegistry;
-use Informika\QueryConstructor\MetaDataProvider\ProviderInterface;
+use Informika\QueryConstructor\Metadata\Registry;
+use Informika\QueryConstructor\Mapping\ClassMetadata;
 
 /**
  * @author Nikita Pushkov
@@ -15,7 +15,7 @@ use Informika\QueryConstructor\MetaDataProvider\ProviderInterface;
 class Joiner
 {
     /**
-     * @var ProviderInterface
+     * @var ClassMetadata
      */
     protected $baseEntityMetadataProvider;
 
@@ -25,18 +25,18 @@ class Joiner
     protected $em;
 
     /**
-     * @var ProviderRegistry
+     * @var Registry
      */
-    protected $metadataHelper;
+    protected $registry;
 
     /**
      * @param EntityManagerInterface $em
-     * @param ProviderRegistry $metadataHelper
+     * @param Registry $registry
      */
-    public function __construct(EntityManagerInterface $em, ProviderRegistry $metadataHelper)
+    public function __construct(EntityManagerInterface $em, Registry $registry)
     {
         $this->em = $em;
-        $this->metadataHelper = $metadataHelper;
+        $this->registry = $registry;
     }
 
     /**
@@ -54,7 +54,7 @@ class Joiner
      */
     public function setBaseEntity($entityClass)
     {
-        $this->baseEntityMetadataProvider = $this->metadataHelper->getProvider($entityClass);
+        $this->baseEntityMetadataProvider = $this->registry->getMetadata($entityClass);
     }
 
     /**
@@ -71,7 +71,7 @@ class Joiner
             throw new \LogicException('BaseEntityMetadataProvider is not set. Call setBaseEntity() method first.');
         }
 
-        if (!array_key_exists($entityClass, $this->baseEntityMetadataProvider->getJoinableEntities())) {
+        if (!array_key_exists($entityClass, $this->baseEntityMetadataProvider->getJoins())) {
             throw new \LogicException(sprintf(
                 'Could not join entity [%s] to [%s]. Set up this relation in the provider [%s].',
                 $entityClass,
@@ -83,14 +83,14 @@ class Joiner
             $dateReport = new \DateTime();
         }
 
-        $relation = $this->baseEntityMetadataProvider->getJoinableEntities()[$entityClass];
+        $relation = $this->baseEntityMetadataProvider->getJoins()[$entityClass];
 
         if (is_array($relation)) {
             array_reduce($relation, function (
-                ProviderInterface $provider,
+                ClassMetadata $provider,
                 $entityClass
             ) use ($qb, $dateReport) {
-                $relation = $provider->getJoinableEntities()[$entityClass];
+                $relation = $provider->getJoins()[$entityClass];
                 if (is_array($relation)) {
                     throw \LogicException('Recursion not supported');
                 }
@@ -103,7 +103,7 @@ class Joiner
                     $dateReport
                 );
 
-                return $this->metadataHelper->getProvider($entityClass);
+                return $this->registry->getMetadata($entityClass);
             }, $this->baseEntityMetadataProvider);
             $entityAlias = $this->getEntityAlias($entityClass);
         } else {

@@ -13,6 +13,11 @@ use Informika\QueryConstructor\Mapping\Annotation\Property;
 class ClassMetadata
 {
     /**
+     * @var string
+     */
+    protected $className;
+
+    /**
      * @var Entity
      */
     protected $entity;
@@ -35,17 +40,26 @@ class ClassMetadata
     /**
      * @param Entity $entity
      */
-    public function __construct(Entity $entity)
+    public function __construct($className, Entity $entity)
     {
+        $this->className = $className;
         $this->entity = $entity;
     }
 
     /**
-     * @return Table
+     * @return Entity
      */
     public function getEntity()
     {
         return $this->entity;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEntityClass()
+    {
+        return $this->className;
     }
 
     /**

@@ -5,7 +5,7 @@ namespace Informika\QueryConstructor\Creator;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
-use Informika\QueryConstructor\MetaDataProvider\ProviderRegistry;
+use Informika\QueryConstructor\Metadata\Registry;
 
 /**
  * @author Alexey Kharybin
@@ -32,7 +32,7 @@ class Creator
     protected $joiner;
 
     /**
-     * @var ProviderRegistry
+     * @var Registry
      */
     protected $registry;
 
@@ -41,7 +41,7 @@ class Creator
      * @param ProviderRegistry $registry
      * @param Joiner $joiner
      */
-    public function __construct(EntityManagerInterface $em, ProviderRegistry $registry, Joiner $joiner)
+    public function __construct(EntityManagerInterface $em, Registry $registry, Joiner $joiner)
     {
         $this->em = $em;
         $this->registry = $registry;
@@ -53,7 +53,7 @@ class Creator
      */
     public function getSupportedEntityClasses()
     {
-        return array_keys($this->registry->getRegisteredEntities());
+        return array_keys($this->registry->getMetadataRegistry());
     }
 
     /**
@@ -182,7 +182,7 @@ class Creator
             $qb->setParameter($paramName, $conditionValue, $paramType);
         }
 
-        $this->registry->onQueryCreated($qb, $entityClass, $entitySelectAlias, $dateReport);
+        //$this->registry->onQueryCreated($qb, $entityClass, $entitySelectAlias, $dateReport);
 
         return $qb;
     }

@@ -40,7 +40,7 @@ class Reader
         if (!$entityMetadata) {
             return null;
         }
-        $classMetadata = new ClassMetadata($entityMetadata);
+        $classMetadata = new ClassMetadata($className, $entityMetadata);
         $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
 
         $aggreagatbleProperties = $this->filterOnlyExcept($properties, $entityMetadata->getSelect(), $entityMetadata->getSelectExcept());

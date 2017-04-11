@@ -47,9 +47,9 @@ class QueryCondition
      * @param mixed $value
      */
     public function __construct(
-        string $type,
-        string $property,
-        string $operator,
+        $type,
+        $property,
+        $operator,
         $value
     ) {
         if (!in_array($type, [
@@ -57,7 +57,7 @@ class QueryCondition
             self::CONDITION_TYPE_OR,
             self::CONDITION_TYPE_NONE
         ])) {
-            throw new CreatorException(sprintf('Bad condition type value given: %s', $type));
+            throw new CreatorException(sprintf('Bad condition type given: %s', $type));
         }
 
         if (!in_array($operator, [
@@ -70,7 +70,7 @@ class QueryCondition
             self::OPERATOR_TYPE_IN,
             self::OPERATOR_TYPE_NOT_IN,
         ])) {
-            throw new CreatorException(sprintf('Bad condition type value given: %s', $type));
+            throw new CreatorException(sprintf('Bad condition operator given: %s', $type));
         }
 
         $this->type = $type;
