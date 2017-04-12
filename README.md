@@ -55,6 +55,7 @@ query_constructor:
     discovery:
         - ['AppBundle\Entity', '/../src/AppBundle/Entity']
 #...
+```
 
 ### Регистрация сущностей, загружаемых в конструктор
 
@@ -136,10 +137,6 @@ $queryBuilder = $this->get('query_constructor.serializer')->unserialize(stripsla
 Допустимые значения `aggregateFunction` - `COUNT`, `SUM`, `MIN`, `MAX`, `AVG`.
 Допустимые значения `conditions[].type` - `NONE`, `AND`, `OR`.
 Допустимые `entity`, `property` определяются из зарегеистрированных провайдеров (см. `MetaDataProvider`).
-
-### MetaDataProvider
-
-`ProviderRegistry` - реестр провайдеров, реализующих `ProviderInterface`
 
 ### Serializer
 
