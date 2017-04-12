@@ -100,6 +100,7 @@ class Joiner
                     $entityClass,
                     $this->getEntityAlias($provider->getEntityClass()),
                     $relation,
+                    $provider->getEntity()->getDateBetween(),
                     $dateReport
                 );
 
@@ -112,6 +113,7 @@ class Joiner
                 $entityClass,
                 $this->getEntityAlias($this->baseEntityMetadataProvider->getEntityClass()),
                 $relation,
+                $this->baseEntityMetadataProvider->getEntity()->getDateBetween(),
                 $dateReport
             );
         }
@@ -124,6 +126,7 @@ class Joiner
      * @param string $entityClass
      * @param string $entityBaseAlias
      * @param string $referenceKey
+     * @param array $dateBetween
      * @param \DateTime $dateReport
      *
      * @return string
@@ -133,6 +136,7 @@ class Joiner
         $entityClass,
         $entityBaseAlias,
         $referenceKey,
+        array $dateBetween,
         \DateTime $dateReport
     )
     {
@@ -145,19 +149,26 @@ class Joiner
         $entityMetaData = $this->em->getClassMetadata($entityClass);
         $id = $entityMetaData->getIdentifier();
 
-        $qb->join(
-            $entityClass,
-            $entityAlias,
-            Join::WITH,
-            sprintf(
-                '%1$s.%2$s = %3$s.%4$s AND (:joinReportDate BETWEEN %3$s.fromDate AND %3$s.toDate)',
-                $entityBaseAlias,
-                $referenceKey,
-                $entityAlias,
-                $id[0]
-            )
-        );
-        if (!$qb->getParameter('joinReportDate')) {
+        $withCondition = $dateBetween
+            ? sprintf(
+                '%1$s.%2$s = %3$s.%4$s AND (:joinReportDate BETWEEN %3$s.%5$s AND %3$s.%6$s)',
+                    $entityBaseAlias,
+                    $referenceKey,
+                    $entityAlias,
+                    $id[0],
+                    $dateBetween[0],
+                    $dateBetween[1]
+                )
+            : sprintf(
+                '%1$s.%2$s = %3$s.%4$s',
+                    $entityBaseAlias,
+                    $referenceKey,
+                    $entityAlias,
+                    $id[0]
+                );
+
+        $qb->join($entityClass, $entityAlias, Join::WITH, $withCondition);
+        if ($dateBetween && !$qb->getParameter('joinReportDate')) {
             $qb->setParameter(':joinReportDate', $dateReport, Type::DATETIME);
         }
         return $entityAlias;
