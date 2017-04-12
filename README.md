@@ -79,6 +79,43 @@ class Entity
 }
 ```
 
+Расширенная настройка
+```php
+<?php
+
+// ...
+
+use Informika\QueryConstructor\Mapping\Annotation as OLAP;
+
+/**
+ * @OLAP\Entity(title="Сущность", select="id", where_except={"prop1", "prop2"}, date_between={"fromDate", "toDate")
+ */
+class Entity
+{
+    /**
+     * @var int
+     */
+    protected $id;
+
+    /**
+     * @var \AppBundle\Entity\QuestionGroup
+     *
+     * @OLAP\Property(type="single_choice", title="Группа", list={"entity":"\AppBundle\Entity\QuestionGroup", "title":"title", "value":"id"})
+     */
+    protected $group;
+
+    /**
+     * @var MonitoringDateTime
+     */
+    protected $fromDate;
+
+    /**
+     * @var \DateTime
+     */
+    protected $toDate;
+}
+```
+
 Использование (на примере Symfony 2/3)
 --------------------------------------
 
