@@ -6,8 +6,9 @@ query-constructor
 Входят следующие инструменты:
 
 * Creator
-* MetaDataProvider
+* Registry
 * Serializer
+* 
 * client
 
 Требования
@@ -16,7 +17,95 @@ query-constructor
 1. PHP 5.4+
 2. Doctrine/ORM 2.5+
 
-Набор инструментов
+Установка
+-------------
+
+### 
+
+
+
+Подключение к проекту (на примере Symfony 2/3)
+----------------------------------------------
+
+### Регистрация прилагаемого бандла
+```php
+// /your-project/app/AppKernel.php
+// ...
+class AppKernel extends Kernel
+{
+    public function registerBundles()
+    {
+        $bundles = [
+            // ...
+            new Informika\QueryConstructor\Bundle\QueryConstructorBundle(),
+        ];
+        // ...
+    }
+// ...
+}
+```
+
+### Настройка бандла
+```yml
+# /your-project/app/config/config.yml
+# ...
+
+# Map entity namespaces & paths relative to /your-project/app/ for discovery service
+query_constructor:
+    discovery:
+        - ['AppBundle\Entity', '/../src/AppBundle/Entity']
+#...
+
+### Регистрация сущностей, загружаемых в конструктор
+
+Минимальная настройка
+```php
+<?php
+
+// ...
+
+use Informika\QueryConstructor\Mapping\Annotation as OLAP;
+
+/**
+ * @OLAP\Entity(title="Сущность")
+ */
+class Entity
+{
+    /**
+     * @var int
+     */
+    protected $id;
+}
+```
+
+Использование (на примере Symfony 2/3)
+--------------------------------------
+
+### Подключение React-компонента
+```javascript
+import QueryConstructor from '../queryConstructor/index'
+...
+<QueryConstructor prefix="myform[field]" {...this.props.queryConstructorProps} />
+...
+```
+
+### Получение QueryBuilder из запроса
+```php
+$queryBuilder = $this->get('query_constructor.creator')->createFromJson($formParams['sqlConstructor']));
+```
+
+### Сохранение QueryBuilder в БД
+```php
+$entity->setSqlFilter(addslashes($this->get('query_constructor.serializer')->serialize($queryBuilder)));
+```
+
+### Восстановление QueryBuilder из БД
+Например, сериализованный QueryBuilder возвращается `$entity->getSqlFilter()`:
+```php
+$queryBuilder = $this->get('query_constructor.serializer')->unserialize(stripslashes($entity->getSqlFilter()));
+```
+
+Подробнее об инструментах пакета
 -------------
 
 ### Creator
@@ -88,289 +177,3 @@ React-компонент конструктора запросов
 * **prefix** - строка, добавляемая к имени всех элементов input, создаваемых компонентом
 
 Конструктор формирует JSON, готовый для отдачи в Creator - в `input` с именем `prefix[sqlConstructor]`
-
-Подключение к проекту (на примере Symfony 2/3)
-----------------------------------------------
-
-### Регистрация сервисов
-```yml
-services:
-    query_constructor.creator:
-        class: Informika\QueryConstructor\Creator\Creator
-        arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@query_constructor.metadata_registry'
-            - '@query_constructor.joiner'
-
-    query_constructor.joiner:
-        class: Informika\QueryConstructor\Creator\Joiner
-        arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@query_constructor.metadata_registry'
-
-    query_constructor.serializer:
-        class: Informika\QueryConstructor\Serializer\Serializer
-        arguments: ['@doctrine.orm.entity_manager']
-
-    query_constructor.metadata_registry:
-        class: Informika\QueryConstructor\MetaDataProvider\ProviderRegistry
-```
-
-### Регистрация провайдеров
-
-```php
-<?php
-
-namespace QueryConstructorBundle\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\Reference;
-
-class MetaDataRegistryLoader implements CompilerPassInterface
-{
-    public function process(ContainerBuilder $container)
-    {
-        // always first check if the primary service is defined
-        if (!$container->has('query_constructor.metadata_registry')) {var_dump('gg');exit;
-            return;
-        }
-
-        $registryDefinition = $container->findDefinition('query_constructor.metadata_registry');
-
-        $providers = $container->findTaggedServiceIds('query_constructor.metadata_provider');
-
-        foreach ($providers as $id => $tags) {
-            $registryDefinition->addMethodCall('register', [new Reference($id)]);
-        }
-    }
-}
-```
-Теперь все сервисы, реализующие интерфейс `MetaDataRegistry\ProviderInterface` и помеченные тегом `query_constructor.metadata_provider`, будут добавлены в реестр провайдеров.
-
-### Простейший контроллер для обслуживания React-компонента
-```php
-<?php
-
-namespace QueryConstructorBundle\Controller;
-
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-
-class DefaultController extends Controller
-{
-    /**
-     * @Route("/entities/", name="query_constructor.entities")
-     *
-     * @return JsonResponse
-     */
-    public function entitiesAction(): JsonResponse
-    {
-        return new JsonResponse([
-            'result' => 'success',
-            'entities' => $this->get('query_constructor.metadata_registry')->getRegisteredEntities(),
-        ]);
-    }
-
-    /**
-     * @Route("/properties/", name="query_constructor.properties")
-     *
-     * @param Request $request
-     *
-     * @return JsonResponse
-     */
-    public function propertiesAction(Request $request): JsonResponse
-    {
-        try {
-            $properties = $this->get('query_constructor.metadata_registry')->get($request->get('entity'));
-        }
-        catch (\Exception $e) {
-            return new JsonResponse([
-                'result' => 'error',
-                'message' => $e->getMessage(),
-            ]);
-        }
-
-        return new JsonResponse([
-            'result' => 'success',
-            'properties' => $properties,
-        ]);
-    }
-}
-```
-
-Использование (на примере Symfony 2/3)
---------------------------------------
-
-### Подключение React-компонента
-```javascript
-import QueryConstructor from '../queryConstructor/index'
-...
-<QueryConstructor prefix="myform[field]" {...this.props.queryConstructorProps} />
-...
-```
-
-### Провайдер
-```php
-<?php
-
-namespace AppBundle\Service\Report;
-
-use AppBundle\Entity\Monitoring\AfterSchoolGroup;
-use AppBundle\Entity\Monitoring\School;
-use AppBundle\Entity\Monitoring\SchoolClass;
-use AppBundle\Entity\Monitoring\Pupil;
-use Doctrine\ORM\QueryBuilder;
-use Informika\QueryConstructor\Creator\Joiner as QueryJoiner;
-use Informika\QueryConstructor\MetaDataProvider\ProviderInterface as MetaDataProviderInterface;
-
-/**
- * Class PupilMetaDataProvider
- */
-class PupilMetaDataProvider implements MetaDataProviderInterface
-{
-    /**
-     * @var QueryJoiner
-     */
-    protected $joiner;
-
-    /**
-     * Этот провайдер использует Joiner для добавления к запросу дополнительных условий
-     *
-     * @param QueryJoiner $joiner
-     */
-    public function __construct(QueryJoiner $joiner)
-    {
-        $this->joiner = $joiner;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAggregatableProperties(): array
-    {
-        return [
-            'id' => 'ID',
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getProperties(): array
-    {
-        return [
-            'trainingProgram' => [
-                'title' => 'Программа обучения',
-                'type' => MetaDataProviderInterface::TYPE_MULTIPLE_CHOICE,
-                'choices' => (object) Pupil::getTrainingProgramTitles(),
-            ],
-            'gender' => [
-                'title' => 'Пол',
-                'type' => MetaDataProviderInterface::TYPE_SINGLE_CHOICE,
-                'choices' => (object) Pupil::getGenderTitles(),
-            ],
-            'birthDate' => [
-                'title' => 'Дата рождения',
-                'type' => MetaDataProviderInterface::TYPE_DATE,
-            ],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getJoinableEntities(): array
-    {
-        return [
-            AfterSchoolGroup::class => 'afterSchoolGroupId',
-            SchoolClass::class => 'schoolClassId',
-            School::class => [
-                SchoolClass::class,
-                School::class,
-            ],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getEntityTitle(): string
-    {
-        return 'Ученик';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getEntityClass(): string
-    {
-        return Pupil::class;
-    }
-
-    /**
-     * Задаёт дополнительные условия к построенному запросу
-     *
-     * @param QueryBuilder $qb
-     * @param string $entitySelectAlias
-     * @param \DateTime $dateReport
-     */
-    public function onQueryCreated(QueryBuilder $qb, string $entitySelectAlias, \DateTime $dateReport)
-    {
-        $this->addDateBetweenCondition($qb, $entitySelectAlias, $dateReport);
-        $this->addSchoolCondition($qb, $entitySelectAlias, $dateReport);
-    }
-
-    /**
-     * @param QueryBuilder $qb
-     * @param string $entitySelectAlias
-     * @param \DateTime $dateReport
-     */
-    protected function addDateBetweenCondition(QueryBuilder $qb, string $entitySelectAlias, \DateTime $dateReport)
-    {
-        $qb->andWhere(":reportDate BETWEEN {$entitySelectAlias}.fromDate AND {$entitySelectAlias}.toDate");
-        $qb->setParameter(':reportDate', $dateReport, Type::DATETIME);
-    }
-
-    /**
-     * @param QueryBuilder $qb
-     * @param string $entitySelectAlias
-     * @param string $entityClass
-     * @param \DateTime $dateReport
-     */
-    protected function addSchoolCondition(QueryBuilder $qb, string $entityAlias, \DateTime $dateReport)
-    {
-        $classAlias = $this->joiner->join($qb, SchoolClass::class, $dateReport);
-        $qb->andWhere($entityAlias . '.school = :schoolId'); // Можно объявить параметр, а задать его позже, например, после десериализации
-    }
-}
-
-```
-
-### Регистрация провайдера
-```yml
-services:
-    app.metadata_constructor.provider_school:
-        class: AppBundle\Service\Report\SchoolMetaDataProvider
-        tags:
-            - { name: query_constructor.metadata_provider }
-```
-
-### Получение QueryBuilder из запроса
-```php
-$queryBuilder = $this->get('query_constructor.creator')->createFromJson($formParams['sqlConstructor']));
-```
-
-### Сохранение QueryBuilder в БД
-```php
-$entity->setSqlFilter(addslashes($this->get('query_constructor.serializer')->serialize($queryBuilder)));
-```
-
-### Восстановление QueryBuilder из БД
-Например, сериализованный QueryBuilder возвращается `$entity->getSqlFilter()`:
-```php
-$queryBuilder = $this->get('query_constructor.serializer')->unserialize(stripslashes($entity->getSqlFilter()));
-```
