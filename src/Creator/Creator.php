@@ -51,14 +51,6 @@ class Creator
     /**
      * @return array
      */
-    public function getSupportedEntityClasses()
-    {
-        return array_keys($this->registry->getMetadataRegistry());
-    }
-
-    /**
-     * @return array
-     */
     public function getAggregateFunctions()
     {
         return [
@@ -101,7 +93,8 @@ class Creator
         }
 
         $entityClass = $doc['entity'];
-        if (!in_array($entityClass, $this->getSupportedEntityClasses())) {
+        $constructorMetadata = $this->registry->getMetadata($entityClass);
+        if (!$constructorMetadata) {
             throw new CreatorException(sprintf('Entity class "%s" is not supported.', $doc['entity']));
         }
 
@@ -182,7 +175,10 @@ class Creator
             $qb->setParameter($paramName, $conditionValue, $paramType);
         }
 
-        //$this->registry->onQueryCreated($qb, $entityClass, $entitySelectAlias, $dateReport);
+        if ($dateBetween = $constructorMetadata->getEntity()->getDateBetween()){
+            $qb->andWhere(":reportDate BETWEEN {$entitySelectAlias}.{$dateBetween[0]} AND {$entitySelectAlias}.{$dateBetween[1]}");
+            $qb->setParameter(':reportDate', $dateReport, Type::DATETIME);
+        }
 
         return $qb;
     }

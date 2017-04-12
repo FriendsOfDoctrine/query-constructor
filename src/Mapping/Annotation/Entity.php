@@ -43,6 +43,11 @@ class Entity
     protected $whereExcept = [];
 
     /**
+     * @var array
+     */
+    protected $dateBetween = [];
+
+    /**
      * Constructor
      *
      * @param array $values
@@ -63,6 +68,12 @@ class Entity
         }
         if (array_key_exists('where_except', $values)) {
             $this->whereExcept = (array) $values['where_except'];
+        }
+        if (array_key_exists('date_between', $values) && is_array($values['date_between'])) {
+            if (count($values['date_between']) !== 2) {
+                throw new \LogicException('date_between must be an array containing exactly 2 column names');
+            }
+            $this->dateBetween = $values['date_between'];
         }
     }
 
@@ -104,5 +115,13 @@ class Entity
     public function getWhereExcept()
     {
         return $this->whereExcept;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDateBetween()
+    {
+        return $this->dateBetween;
     }
 }

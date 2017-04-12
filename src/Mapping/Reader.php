@@ -151,8 +151,9 @@ class Reader
     }
 
     /**
-     * @param \Informika\QueryConstructor\Mapping\ClassMetadata $propertyMetadata
-     * @param \ReflectionProperty $property
+     * @param string $className
+     * @param string $valueField
+     * @param string $titleField
      * @return array
      */
     protected function loadChoices($className, $valueField, $titleField)
