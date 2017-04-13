@@ -92,7 +92,7 @@ class Entity
 use Informika\QueryConstructor\Mapping\Annotation as QC;
 
 /**
- * @QC\Entity(title="Сущность", select="id", where_except={"prop1", "prop2"}, date_between={"fromDate", "toDate")
+ * @QC\Entity(title="Сущность", aggregatable_fields="id", filterable_fields_except={"prop1", "prop2"}, date_between={"fromDate", "toDate")
  */
 class Entity
 {
@@ -123,10 +123,10 @@ class Entity
 ##### Опции аннотации класса Entity
 
 * **title** *string* - название сущности в конструкторе
-* **select** *string|array* - названия свойств сущности для списка выборки (если не задано, участвуют все свойства)
-* **select_except** *string|array* - исключить указанные свойства сущности из списка выборки
-* **where** *string|array* - названия свойств сущности для списка фильтрации (условий) (если не задано, участвуют все свойства)
-* **where_except** *string|array* - исключить указанные свойства сущности из списка фильтрации (условий)
+* **aggregatable_fields** *string|array* - названия свойств сущности для списка выборки (если не задано, участвуют все свойства)
+* **aggregatable_fields_except** *string|array* - исключить указанные свойства сущности из списка выборки
+* **filterable_fields** *string|array* - названия свойств сущности для списка фильтрации (условий) (если не задано, участвуют все свойства)
+* **filterable_fields_except** *string|array* - исключить указанные свойства сущности из списка фильтрации (условий)
 * **date_between** *array* - названия двух колонок (например, `fromDate`, `toDate`), которые будут добавлены в виде условия ` AND (:dateReport BETWEEN fromDate AND toDate)`, где `:dateReport` - дата, на которую требуется получить отчет.
 
 ##### Опции аннотации свойства Property

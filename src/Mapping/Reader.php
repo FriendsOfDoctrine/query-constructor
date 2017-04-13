@@ -52,11 +52,11 @@ class Reader
         $classMetadata = new ClassMetadata($reflection->getName(), $entityMetadata);
         $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
 
-        $aggreagatbleProperties = $this->filterOnlyExcept($properties, $entityMetadata->getSelect(), $entityMetadata->getSelectExcept());
-        $classMetadata->setAggregatableProperties($this->fetchProperties($aggreagatbleProperties));
+        $aggregatableProperties = $this->filterOnlyExcept($properties, $entityMetadata->getAggregatableFields(), $entityMetadata->getAggregatableFieldsExcept());
+        $classMetadata->setAggregatableProperties($this->fetchProperties($aggregatableProperties));
 
-        $whereProperties = $this->filterOnlyExcept($properties, $entityMetadata->getWhere(), $entityMetadata->getWhereExcept());
-        $classMetadata->setProperties($this->fetchProperties($whereProperties));
+        $filterableProperties = $this->filterOnlyExcept($properties, $entityMetadata->getFilterableFields(), $entityMetadata->getFilterableFieldsExcept());
+        $classMetadata->setProperties($this->fetchProperties($filterableProperties));
 
         $classMetadata->setJoins($this->makeJoins($properties));
 

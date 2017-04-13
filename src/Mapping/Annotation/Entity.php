@@ -25,22 +25,22 @@ class Entity
     /**
      * @var array
      */
-    protected $select = [];
+    protected $aggregatableFields = [];
 
     /**
      * @var array
      */
-    protected $selectExcept = [];
+    protected $aggregatableFieldsExcept = [];
 
     /**
      * @var array
      */
-    protected $where = [];
+    protected $filterableFields = [];
 
     /**
      * @var array
      */
-    protected $whereExcept = [];
+    protected $filterableFieldsExcept = [];
 
     /**
      * @var array
@@ -57,17 +57,17 @@ class Entity
         if (array_key_exists('title', $values)) {
             $this->title = $values['title'];
         }
-        if (array_key_exists('select', $values)) {
-            $this->select = (array) $values['select'];
+        if (array_key_exists('aggregatable_fields', $values)) {
+            $this->aggregatableFields = (array) $values['aggregatable_fields'];
         }
-        if (array_key_exists('select_except', $values)) {
-            $this->selectExcept = (array) $values['select_except'];
+        if (array_key_exists('aggregatable_fields_except', $values)) {
+            $this->aggregatableFieldsExcept = (array) $values['aggregatable_fields_except'];
         }
-        if (array_key_exists('where', $values)) {
-            $this->where = (array) $values['where'];
+        if (array_key_exists('filterable_fields', $values)) {
+            $this->filterableFields = (array) $values['filterable_fields'];
         }
-        if (array_key_exists('where_except', $values)) {
-            $this->whereExcept = (array) $values['where_except'];
+        if (array_key_exists('filterable_fields_except', $values)) {
+            $this->filterableFieldsExcept = (array) $values['filterable_fields_except'];
         }
         if (array_key_exists('date_between', $values) && is_array($values['date_between'])) {
             if (count($values['date_between']) !== 2) {
@@ -88,33 +88,33 @@ class Entity
     /**
      * @return array
      */
-    public function getSelect()
+    public function getAggregatableFields()
     {
-        return $this->select;
+        return $this->aggregatableFields;
     }
 
     /**
      * @return array
      */
-    public function getSelectExcept()
+    public function getAggregatableFieldsExcept()
     {
-        return $this->selectExcept;
+        return $this->aggregatableFieldsExcept;
     }
 
     /**
      * @return array
      */
-    public function getWhere()
+    public function getFilterableFields()
     {
-        return $this->where;
+        return $this->filterableFields;
     }
 
     /**
      * @return array
      */
-    public function getWhereExcept()
+    public function getFilterableFieldsExcept()
     {
-        return $this->whereExcept;
+        return $this->filterableFieldsExcept;
     }
 
     /**
