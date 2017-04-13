@@ -3,6 +3,7 @@
 namespace Informika\QueryConstructor\Mapping;
 
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata as OrmClassMetadata;
 use Informika\QueryConstructor\Mapping\Annotation\Entity;
@@ -50,13 +51,13 @@ class Reader
             return null;
         }
         $classMetadata = new ClassMetadata($reflection->getName(), $entityMetadata);
-        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
+        $properties = $metaData->getReflectionProperties();
 
         $aggregatableProperties = $this->filterOnlyExcept($properties, $entityMetadata->getAggregatableFields(), $entityMetadata->getAggregatableFieldsExcept());
-        $classMetadata->setAggregatableProperties($this->fetchProperties($aggregatableProperties));
+        $classMetadata->setAggregatableProperties($this->fetchProperties($metaData, $aggregatableProperties));
 
         $filterableProperties = $this->filterOnlyExcept($properties, $entityMetadata->getFilterableFields(), $entityMetadata->getFilterableFieldsExcept());
-        $classMetadata->setProperties($this->fetchProperties($filterableProperties));
+        $classMetadata->setProperties($this->fetchProperties($metaData, $filterableProperties));
 
         $classMetadata->setJoins($this->makeJoins($properties));
 
@@ -107,24 +108,26 @@ class Reader
     }
 
     /**
+     * @param OrmClassMetadata $metadata
      * @param array $properties
      * @return array
      */
-    protected function fetchProperties(array $properties)
+    protected function fetchProperties(OrmClassMetadata $metadata, array $properties)
     {
         $result = [];
         foreach ($properties as $property) {
-            $result[$property->getName()] = $this->makePropertyFromReflection($property);
+            $result[$property->getName()] = $this->makePropertyFromReflection($metadata, $property);
         }
 
         return $result;
     }
 
     /**
+     * @param OrmClassMetadata $metadata
      * @param \ReflectionProperty $property
      * @return Property
      */
-    protected function makePropertyFromReflection(\ReflectionProperty $property)
+    protected function makePropertyFromReflection(OrmClassMetadata $metadata, \ReflectionProperty $property)
     {
         $propertyMetadata = $this->reader->getPropertyAnnotation($property, Property::CLASSNAME);
         if (!$propertyMetadata) {
@@ -143,8 +146,7 @@ class Reader
             if (is_array($propertyMetadata->choices) && count($propertyMetadata->choices) > 0) {
                 $propertyMetadata->type = Property::TYPE_MULTIPLE_CHOICE;
             } else {
-                $phpdocPropertyType = $this->getPhpDocPropertyType($property);
-                $propertyMetadata->type = $this->mapPropertyTypeFromPhpDoc($phpdocPropertyType);
+                $propertyMetadata->type = $this->mapPropertyTypeFromDoctrine($metadata->getTypeOfField($property->getName()));
             }
         }
 
@@ -177,19 +179,21 @@ class Reader
     }
 
     /**
-     * @param mixed $phpdocPropertyType
+     * @param string $propertyType
      * @return string
      */
-    protected function mapPropertyTypeFromPhpDoc($phpdocPropertyType)
+    protected function mapPropertyTypeFromDoctrine($propertyType)
     {
-        switch ($phpdocPropertyType) {
-            case 'bool':
-            case 'boolean':
-            case 'int':
-            case 'integer':
+        switch ($propertyType) {
+            case Type::BOOLEAN:
+            case Type::BIGINT:
+            case Type::INTEGER:
+            case Type::SMALLINT:
                 return Property::TYPE_INTEGER;
-            case 'DateTime':
-            case '\DateTime':
+            case Type::DATETIME:
+            case Type::DATETIMETZ:
+            case Type::DATE:
+            case Type::TIME:
                 return Property::TYPE_DATE;
             default:
                 return Property::TYPE_STRING;
