@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\Mapping\Annotation;
+namespace FOD\QueryConstructor\Mapping\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
 
@@ -16,8 +16,6 @@ class Entity
     const CLASSNAME = __CLASS__; // PHP5.4 support
 
     /**
-     * @Required
-     *
      * @var string
      */
     protected $title;
@@ -83,6 +81,14 @@ class Entity
     public function getTitle()
     {
         return $this->title;
+    }
+
+    /**
+     * @param string
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
     }
 
     /**

@@ -1,13 +1,13 @@
 <?php
 
-namespace Informika\QueryConstructor\Mapping;
+namespace FOD\QueryConstructor\Mapping;
 
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata as OrmClassMetadata;
-use Informika\QueryConstructor\Mapping\Annotation\Entity;
-use Informika\QueryConstructor\Mapping\Annotation\Property;
+use FOD\QueryConstructor\Mapping\Annotation\Entity;
+use FOD\QueryConstructor\Mapping\Annotation\Property;
 
 /**
  * @author Nikita Pushkov

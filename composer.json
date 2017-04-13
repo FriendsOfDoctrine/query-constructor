@@ -1,16 +1,15 @@
 {
-    "name": "informika/query-constructor",
+    "name": "friends-of-doctrine/query-constructor",
     "description": "GUI & serializer for Doctrine ORM QueryBuilder",
     "keywords": ["doctrine"],
     "type": "library",
     "require": {
-        "php": "^5.4",
         "doctrine/orm": "^2.5"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Informika\\QueryConstructor\\": "src/"
+            "FOD\\QueryConstructor\\": "src/"
         }
     }
 }

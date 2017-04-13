@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\Bundle\Controller;
+namespace FOD\QueryConstructor\Bundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;

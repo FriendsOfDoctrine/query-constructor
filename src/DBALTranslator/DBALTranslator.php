@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\DBALTranslator;
+namespace FOD\QueryConstructor\DBALTranslator;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\Expression\CompositeExpression;

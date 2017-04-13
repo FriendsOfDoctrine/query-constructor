@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\Serializer;
+namespace FOD\QueryConstructor\Serializer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;

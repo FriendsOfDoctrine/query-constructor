@@ -1,9 +1,9 @@
 <?php
 
-namespace Informika\QueryConstructor\Mapping;
+namespace FOD\QueryConstructor\Mapping;
 
-use Informika\QueryConstructor\Mapping\Annotation\Entity;
-use Informika\QueryConstructor\Mapping\Annotation\Property;
+use FOD\QueryConstructor\Mapping\Annotation\Entity;
+use FOD\QueryConstructor\Mapping\Annotation\Property;
 
 /**
  * Metadata for Query Constructor
@@ -44,6 +44,9 @@ class ClassMetadata
     {
         $this->className = $className;
         $this->entity = $entity;
+        if (!$entity->getTitle()) {
+            $entity->setTitle(ucfirst($this->getClassBaseName($className)));
+        }
     }
 
     /**
@@ -108,5 +111,19 @@ class ClassMetadata
     public function setJoins(array $joins)
     {
         $this->joins = $joins;
+    }
+
+    /**
+     * @param string $className
+     * @return string
+     */
+    protected function getClassBaseName($className)
+    {
+        $lastNamespacePos = strrpos($className, '\\');
+        if ($lastNamespacePos === false) {
+            return $className;
+        } else {
+            return substr($className, $lastNamespacePos + 1);
+        }
     }
 }

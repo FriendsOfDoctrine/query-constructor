@@ -1,9 +1,9 @@
 <?php
 
-namespace Informika\QueryConstructor\Metadata;
+namespace FOD\QueryConstructor\Metadata;
 
 use Doctrine\ORM\EntityManager;
-use Informika\QueryConstructor\Mapping\Reader;
+use FOD\QueryConstructor\Mapping\Reader;
 
 /**
  * Description of DoctrineDiscovery
@@ -51,7 +51,7 @@ class DoctrineDiscovery
 
     /**
      * @param string $className
-     * @return Informika\QueryConstructor\Mapping\ClassMetadata
+     * @return FOD\QueryConstructor\Mapping\ClassMetadata
      */
     public function getClassMetaData($className)
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\Mapping\Annotation;
+namespace FOD\QueryConstructor\Mapping\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
 

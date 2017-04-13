@@ -1,31 +1,31 @@
 services:
     query_constructor.creator:
-        class: Informika\QueryConstructor\Creator\Creator
+        class: FOD\QueryConstructor\Creator\Creator
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@query_constructor.registry'
             - '@query_constructor.joiner'
 
     query_constructor.joiner:
-        class: Informika\QueryConstructor\Creator\Joiner
+        class: FOD\QueryConstructor\Creator\Joiner
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@query_constructor.registry'
 
     query_constructor.serializer:
-        class: Informika\QueryConstructor\Serializer\Serializer
+        class: FOD\QueryConstructor\Serializer\Serializer
         arguments: ['@doctrine.orm.entity_manager']
 
     query_constructor.registry:
-        class: Informika\QueryConstructor\Metadata\Registry
+        class: FOD\QueryConstructor\Metadata\Registry
         arguments: ['@query_constructor.discovery']
 
     query_constructor.reader:
-        class: Informika\QueryConstructor\Mapping\Reader
+        class: FOD\QueryConstructor\Mapping\Reader
         arguments: ['@doctrine.orm.entity_manager', '@annotation_reader']
 
     query_constructor.discovery:
-        class: Informika\QueryConstructor\Metadata\DoctrineDiscovery
+        class: FOD\QueryConstructor\Metadata\DoctrineDiscovery
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@query_constructor.reader'

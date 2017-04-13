@@ -1,11 +1,11 @@
 <?php
 
-namespace Informika\QueryConstructor\Creator;
+namespace FOD\QueryConstructor\Creator;
 
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
-use Informika\QueryConstructor\Metadata\Registry;
+use FOD\QueryConstructor\Metadata\Registry;
 
 /**
  * @author Alexey Kharybin

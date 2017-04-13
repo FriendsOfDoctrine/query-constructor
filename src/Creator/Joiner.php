@@ -1,13 +1,13 @@
 <?php
 
-namespace Informika\QueryConstructor\Creator;
+namespace FOD\QueryConstructor\Creator;
 
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
-use Informika\QueryConstructor\Metadata\Registry;
-use Informika\QueryConstructor\Mapping\ClassMetadata;
+use FOD\QueryConstructor\Metadata\Registry;
+use FOD\QueryConstructor\Mapping\ClassMetadata;
 
 /**
  * @author Nikita Pushkov

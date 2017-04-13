@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\Bundle;
+namespace FOD\QueryConstructor\Bundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle as Bundle;
 

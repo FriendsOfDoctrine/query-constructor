@@ -1,10 +1,10 @@
 <?php
 
-namespace Informika\QueryConstructor\Metadata;
+namespace FOD\QueryConstructor\Metadata;
 
-use Informika\QueryConstructor\Mapping\ClassMetadata;
-use Informika\QueryConstructor\Mapping\Reader;
-use Informika\QueryConstructor\Metadata\DoctrineDiscovery;
+use FOD\QueryConstructor\Mapping\ClassMetadata;
+use FOD\QueryConstructor\Mapping\Reader;
+use FOD\QueryConstructor\Metadata\DoctrineDiscovery;
 
 /**
  * Metadata Registry

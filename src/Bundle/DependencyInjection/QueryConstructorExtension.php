@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\Bundle\DependencyInjection;
+namespace FOD\QueryConstructor\Bundle\DependencyInjection;
 
 
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;

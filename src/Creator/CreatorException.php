@@ -1,6 +1,6 @@
 <?php
 
-namespace Informika\QueryConstructor\Creator;
+namespace FOD\QueryConstructor\Creator;
 
 class CreatorException extends \Exception
 {
