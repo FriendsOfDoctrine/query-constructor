@@ -25,7 +25,7 @@ services:
         arguments: ['@doctrine.orm.entity_manager', '@annotation_reader']
 
     query_constructor.discovery:
-        class: Informika\QueryConstructor\Metadata\Discovery
+        class: Informika\QueryConstructor\Metadata\DoctrineDiscovery
         arguments:
-            - '%kernel.root_dir%'
+            - '@doctrine.orm.entity_manager'
             - '@query_constructor.reader'

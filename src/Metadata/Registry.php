@@ -4,7 +4,7 @@ namespace Informika\QueryConstructor\Metadata;
 
 use Informika\QueryConstructor\Mapping\ClassMetadata;
 use Informika\QueryConstructor\Mapping\Reader;
-use Informika\QueryConstructor\Metadata\Discovery;
+use Informika\QueryConstructor\Metadata\DoctrineDiscovery;
 
 /**
  * Metadata Registry
@@ -19,7 +19,7 @@ class Registry
     protected $metadataRegistry;
 
     /**
-     * @var Discovery
+     * @var DoctrineDiscovery
      */
     protected $dicsovery;
 
@@ -27,7 +27,7 @@ class Registry
      * @param Discovery $discovery
      * @param Reader $reader
      */
-    public function __construct(Discovery $discovery)
+    public function __construct(DoctrineDiscovery $discovery)
     {
         $this->discovery = $discovery;
     }

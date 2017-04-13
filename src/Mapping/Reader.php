@@ -4,6 +4,7 @@ namespace Informika\QueryConstructor\Mapping;
 
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata as OrmClassMetadata;
 use Informika\QueryConstructor\Mapping\Annotation\Entity;
 use Informika\QueryConstructor\Mapping\Annotation\Property;
 
@@ -35,12 +36,12 @@ class Reader
     }
 
     /**
-     * @param string $className
+     * @param OrmClassMetadata $metaData
      * @return ClassMetadata|null
      */
-    public function getClassMetaData($className)
+    public function getClassMetaData(OrmClassMetadata $metaData)
     {
-        $reflection = new \ReflectionClass($className);
+        $reflection = $metaData->getReflectionClass();
         $entityMetadata = $this->reader->getClassAnnotation(
             $reflection,
             Entity::CLASSNAME
@@ -48,7 +49,7 @@ class Reader
         if (!$entityMetadata) {
             return null;
         }
-        $classMetadata = new ClassMetadata($className, $entityMetadata);
+        $classMetadata = new ClassMetadata($reflection->getName(), $entityMetadata);
         $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
 
         $aggreagatbleProperties = $this->filterOnlyExcept($properties, $entityMetadata->getSelect(), $entityMetadata->getSelectExcept());
