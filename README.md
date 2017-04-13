@@ -65,10 +65,10 @@ query_constructor:
 
 // ...
 
-use Informika\QueryConstructor\Mapping\Annotation as OLAP;
+use Informika\QueryConstructor\Mapping\Annotation as QC;
 
 /**
- * @OLAP\Entity(title="Сущность")
+ * @QC\Entity(title="Сущность")
  */
 class Entity
 {
@@ -89,10 +89,10 @@ class Entity
 
 // ...
 
-use Informika\QueryConstructor\Mapping\Annotation as OLAP;
+use Informika\QueryConstructor\Mapping\Annotation as QC;
 
 /**
- * @OLAP\Entity(title="Сущность", select="id", where_except={"prop1", "prop2"}, date_between={"fromDate", "toDate")
+ * @QC\Entity(title="Сущность", select="id", where_except={"prop1", "prop2"}, date_between={"fromDate", "toDate")
  */
 class Entity
 {
@@ -104,7 +104,7 @@ class Entity
     /**
      * @var \AppBundle\Entity\QuestionGroup
      *
-     * @OLAP\Property(type="single_choice", title="Группа", list={"entity":"\AppBundle\Entity\QuestionGroup", "title":"title", "value":"id"})
+     * @QC\Property(type="single_choice", title="Группа", list={"entity":"\AppBundle\Entity\QuestionGroup", "title":"title", "value":"id"})
      */
     protected $group;
 
