@@ -34,9 +34,9 @@ class Property
     public $type;
 
     /**
-     * @var array (entity, value, title)
+     * @var string
      */
-    public $list;
+    public $titleField;
 
     /**
      * @var array
