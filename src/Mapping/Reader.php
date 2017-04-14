@@ -58,7 +58,11 @@ class Reader
         $classMetadata = new ClassMetadata($reflection->getName(), $entityMetadata);
         $properties = $metaData->getReflectionProperties();
 
-        $aggregatableProperties = $this->filterOnlyExcept($properties, $entityMetadata->getAggregatableFields(), $entityMetadata->getAggregatableFieldsExcept());
+        $aggregatableProperties = $this->filterOnlyExcept(
+            $properties,
+            $entityMetadata->getAggregatableFields() ?: $metaData->getIdentifierFieldNames(),
+            $entityMetadata->getAggregatableFieldsExcept()
+        );
         $classMetadata->setAggregatableProperties($this->fetchProperties($metaData, $aggregatableProperties));
 
         $filterableProperties = $this->filterOnlyExcept($properties, $entityMetadata->getFilterableFields(), $entityMetadata->getFilterableFieldsExcept());

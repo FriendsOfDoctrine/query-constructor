@@ -13,8 +13,7 @@ query-constructor
 Требования
 ----------
 
-1. PHP 5.4+
-2. Doctrine/ORM 2.5+
+Doctrine/ORM 2.5+
 
 Подключение к проекту (на примере Symfony 2/3)
 ----------------------------------------------
@@ -29,7 +28,7 @@ class AppKernel extends Kernel
     {
         $bundles = [
             // ...
-            new Informika\QueryConstructor\Bundle\QueryConstructorBundle(),
+            new FOD\QueryConstructor\Bundle\QueryConstructorBundle(),
         ];
         // ...
     }
@@ -37,33 +36,329 @@ class AppKernel extends Kernel
 }
 ```
 
-### Регистрация сущностей, загружаемых в конструктор
+### Наполнение конструктора сущностями
 
 Все настройки выполняются через аннотации классов и свойств.
 
-#### Минимальная настройка
+#### Выбор сущностей, попадающих в конструктор
+
+**Что сделать**
+Указать аннотацию класса `QC\Entity`.
+
+**Результат**
+1. Сущность попадет в конструктор. Название в списке выбора - имя класса.
+2. Можно аггрегировать и фильтровать по всем свойствам класса, которые отмечены аннотацией `ORM\Column`.
+3. Свойства, отмеченные аннотацией `ORM\ManyToOne`, становятся фильтрами со списками выбора (можно выбрать несколько значений)
+
+**Пример**
+
+В конструктор должна попасть сущность `Room` с фильтрами `Id` (integer), `Name` (string) и `Building` (список выбора)
+
 ```php
 <?php
 
 // ...
 
-use Informika\QueryConstructor\Mapping\Annotation as QC;
+use Doctrine\ORM\Mapping as ORM;
+use FOD\QueryConstructor\Mapping\Annotation as QC;
 
 /**
  * @QC\Entity()
  */
-class Entity
+class Room
 {
     /**
-     * @var int
+     * @ORM\Id
+     * @ORM\Column(type="integer")
      */
     protected $id;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $name;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Building", inversedBy="rooms")
+     */
+    protected $building;
 }
 ```
 
-Обязательно указать аннотацию класса `Entity`
+#### Добавление подписи сущности в конструкторе
 
-Все свойства класса будут доступны как для выборки, так и для фильтрации. Тип определяется автоматически по Doctrine-аннотации свойства.
+**Что сделать**
+Добавить опцию `title` аннотации класса `QC\Entity`.
+
+**Результат**
+Сущность будет назваться, как указано в `title`. Если опция не задана, используется название свойства в классе.
+
+**Пример**
+
+Сущность Room должна иметь подпись `Помещение`
+
+```php
+<?php
+
+// ...
+
+use FOD\QueryConstructor\Mapping\Annotation as QC;
+
+/**
+ * @QC\Entity(title="Помещение")
+ */
+class Room
+{
+    // ...
+}
+```
+
+#### Добавление подписи свойства в конструкторе
+
+**Что сделать**
+Добавить аннотацию свойства `QC\Property` с опцией `title`.
+
+**Результат**
+Свойство будет назваться, как указано в `title`. Если опция не задана, используется название класса.
+
+**Пример**
+
+Фильтр `Building` должен иметь подпись `Здание`
+
+```php
+<?php
+
+// ...
+
+use FOD\QueryConstructor\Mapping\Annotation as QC;
+
+/**
+ * @QC\Entity(title="Помещение")
+ */
+class Room
+{
+    // ...
+
+    /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Building", inversedBy="rooms")
+     * @QC\Property(title="Здание")
+     */
+    protected $building;
+
+}
+```
+
+#### Указание поля с подписью для значений фильтра-выпадающего списка
+
+**Что сделать**
+Добавить опцию `titleField` в аннотацию свойства `QC\Property` с указанием названия свойства связанной сущности, откуда будут взяты значения подписей.
+
+**Результат**
+Подписи элементов списка будут взяты из указанного свойства связанной сущности. Если опция `titleField` не задана, подписи берутся из первого поля типа string. Если в сущности такого поля нет и опция не задана явно, выбрасывается исключение.
+
+**Пример**
+
+Вывести подписи из поля `Building.address`
+
+```php
+<?php
+
+// ...
+
+use FOD\QueryConstructor\Mapping\Annotation as QC;
+
+/**
+ * @QC\Entity(title="Помещение")
+ */
+class Room
+{
+    // ...
+
+    /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Building", inversedBy="rooms")
+     * @QC\Property(title="Здание", titleField="address")
+     */
+    protected $building;
+
+}
+```
+
+#### Определение свойств для аггрегации, попадающих в конструктор
+
+**Что сделать**
+Добавить опцию `aggregatable_fields` в аннотацию класса `QC\Entity` с указанием названий свойств, к которым применять аггрегирующие функции. Можно задавать как массив, так и строку (если одно поле).
+
+**Результат**
+В списке аггрегации будут присутствовать только указанные свойства. Если не задана, присутствует только первичный ключ
+
+**Пример**
+
+В список аггрегации должны попасть `Id` и `Name`
+
+```php
+<?php
+
+// ...
+
+use Doctrine\ORM\Mapping as ORM;
+use FOD\QueryConstructor\Mapping\Annotation as QC;
+
+/**
+ * @QC\Entity(aggregatable_fields={"id", "name"})
+ */
+class Room
+{
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     */
+    protected $id;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $name;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Building", inversedBy="rooms")
+     */
+    protected $building;
+}
+```
+
+#### Определение свойств для фильтрации, попадающих в конструктор
+
+**Что сделать**
+Добавить опцию `filterable_fields` в аннотацию класса `QC\Entity` с указанием названий свойств, по которым можно фильтровать. Можно задавать как массив, так и строку (если одно поле).
+
+**Результат**
+В списках фильтров будут присутствовать только указанные свойства. Если опция не задана, присутствуют все свойства.
+
+**Пример**
+
+В список фильтрации должен попасть только `Name`
+
+```php
+<?php
+
+// ...
+
+use Doctrine\ORM\Mapping as ORM;
+use FOD\QueryConstructor\Mapping\Annotation as QC;
+
+/**
+ * @QC\Entity(filterable_fields="name")
+ */
+class Room
+{
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     */
+    protected $id;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $name;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Building", inversedBy="rooms")
+     */
+    protected $building;
+}
+```
+
+#### Исключение свойств для фильтрации, попадающих в конструктор
+
+**Что сделать**
+Добавить опцию `filterable_fields_except` в аннотацию класса `QC\Entity` с указанием названий свойств, которые исключить из фильтрации. Можно задавать как массив, так и строку (если одно поле).
+
+**Результат**
+В списках фильтров указанные свойства будут отсутствовать. Если опция применяется совместно с `filterable_fields`, будут выведены только `filterable_fields` за исключением свойств, отмеченных в `filterable_fields_except`.
+
+**Пример**
+
+В список фильтрации не должен попасть `Id`
+
+```php
+<?php
+
+// ...
+
+use Doctrine\ORM\Mapping as ORM;
+use FOD\QueryConstructor\Mapping\Annotation as QC;
+
+/**
+ * @QC\Entity(filterable_fields_except="id")
+ */
+class Room
+{
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     */
+    protected $id;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $name;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Building", inversedBy="rooms")
+     */
+    protected $building;
+}
+```
+
+#### Добавление условия по дате для выборки сущности
+
+**Что сделать**
+Добавить опцию `date_between` аннотации класса `QC\Entity`. В опции указываются названия двух свойств сущности, содержащие даты "от" и "до".
+
+**Результат**
+К построенному запросу будет добавлено условие ` AND (:dateReport BETWEEN column1 AND column2)`, где `:dateReport` - дата, которая приходит из формы (удобно, если в таблице сущности применен паттерн "Версия реализации").
+
+**Пример**
+
+К запросу по сущности `Room` будет добавлено условие ` AND (:dateReport BETWEEN fromDate AND toDate)` с параметром `dateReport`.
+
+```php
+<?php
+
+// ...
+
+use FOD\QueryConstructor\Mapping\Annotation as QC;
+
+/**
+ * @QC\Entity(date_between={"fromDate", "toDate"})
+ */
+class Room
+{
+    // ...
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $fromDate;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $toDate;
+}
+```
+
+#### Указание связанных сущностей для фильтров
+
+**Что сделать**
+Указать аннотацию класса `QC\Entity` в связанной сущности (которая отмечена в текущей сущности аннотацией `ORM\ManyToOne`.
+
+**Результат**
+При задании фильтра можно будет выбрать связанную сущность и ее свойства, настраиваемые по правилам, указанным выше.
+
+
 
 #### Расширенная настройка
 ```php
@@ -101,32 +396,6 @@ class Entity
     protected $toDate;
 }
 ```
-
-##### Необязательные опции аннотации класса Entity
-
-* **title** *string* - название сущности в конструкторе (если не задано, выводится название класса)
-* **aggregatable_fields** *string|array* - названия свойств сущности для списка выборки (если не задано, участвуют все свойства)
-* **aggregatable_fields_except** *string|array* - исключить указанные свойства сущности из списка выборки
-* **filterable_fields** *string|array* - названия свойств сущности для списка фильтрации (условий) (если не задано, участвуют все свойства)
-* **filterable_fields_except** *string|array* - исключить указанные свойства сущности из списка фильтрации (условий)
-* **date_between** *array* - названия двух колонок (например, `fromDate`, `toDate`), которые будут добавлены в виде условия ` AND (:dateReport BETWEEN fromDate AND toDate)`, где `:dateReport` - дата, на которую требуется получить отчет.
-
-##### Необязательные опции аннотации свойства Property
-
-* **title** *string* - название свойства в конструкторе (если не задано, выводится исходное название свойства)
-* **type** *string* - тип свойства (если не задано, определяется по phpdoc). Поддерживаются значения `integer`, `string`, `date`, `single_choice`, `multiple_choice`.
-* **list** *array* - параметры загрузки списка выбора. Ключи: `entity` - класс сущности-справочника, `value` - свойство-значение, `title` - свойство-подпись.
-
-##### Указание условий из связанных сущностей
-
-Указать тип phpdoc свойства как класс, в котором задана аннотация `Entity`. Такой класс будет сразу доступен в конструкторе запроса в списке условий.
-
-##### Определение типа свойства по phpdoc (если type не указан явно)
-Тип свойства - тип phpdoc:
-* integer - int, integer, bool, boolean
-* date - DateTime, \DateTime
-* multiple_choice - phpdoc не учитывается, если задана опция аннотации свойства list
-* string - все остальные случаи
 
 Использование (на примере Symfony 2/3)
 --------------------------------------
