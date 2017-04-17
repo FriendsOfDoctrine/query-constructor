@@ -2,6 +2,7 @@
 
 namespace FOD\QueryConstructor\Metadata;
 
+use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use Doctrine\ORM\EntityManager;
 use FOD\QueryConstructor\Mapping\Reader;
 
@@ -24,11 +25,12 @@ class DoctrineDiscovery
 
     /**
      * @param EntityManager $em
+     * @param AnnotationReader $reader
      */
-    public function __construct(EntityManager $em, Reader $reader)
+    public function __construct(EntityManager $em, AnnotationReader $reader)
     {
         $this->em = $em;
-        $this->reader = $reader;
+        $this->reader = new Reader($em, $reader);
     }
 
     /**

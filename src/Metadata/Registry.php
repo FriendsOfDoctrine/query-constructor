@@ -2,6 +2,8 @@
 
 namespace FOD\QueryConstructor\Metadata;
 
+use Doctrine\Common\Annotations\Reader as AnnotationReader;
+use Doctrine\ORM\EntityManager;
 use FOD\QueryConstructor\Mapping\ClassMetadata;
 use FOD\QueryConstructor\Mapping\Reader;
 use FOD\QueryConstructor\Metadata\DoctrineDiscovery;
@@ -24,12 +26,12 @@ class Registry
     protected $dicsovery;
 
     /**
-     * @param Discovery $discovery
-     * @param Reader $reader
+     * @param EntityManager $em
+     * @param AnnotationReader $reader
      */
-    public function __construct(DoctrineDiscovery $discovery)
+    public function __construct(EntityManager $em, AnnotationReader $reader)
     {
-        $this->discovery = $discovery;
+        $this->discovery = new DoctrineDiscovery($em, $reader);
     }
 
     /**

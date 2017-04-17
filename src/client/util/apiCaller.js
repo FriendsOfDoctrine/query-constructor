@@ -1,9 +1,7 @@
 import fetch from 'isomorphic-fetch'
 
-export const API_URL = window.BASE_API_URL
-
 export default function callApi(endpoint, method = 'get', body) {
-  return fetch(`${API_URL}/${endpoint}`, {
+  return fetch(endpoint, {
       headers: { 'content-type': 'application/json' },
       method,
       body: JSON.stringify(body),

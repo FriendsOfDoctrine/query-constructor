@@ -11,20 +11,21 @@ use Symfony\Component\HttpFoundation\Request;
 class DefaultController extends Controller
 {
     /**
-     * @Route("/query_constructor/entities/", name="informika.query_constructor.entities")
+     * @Route("/fod_query_constructor/", name="fod.query_constructor.index")
      *
      * @return JsonResponse
      */
-    public function entitiesAction()
+    public function indexAction()
     {
         return new JsonResponse([
             'result' => 'success',
             'entities' => $this->get('query_constructor.registry')->getEntityTitles(),
+            'aggregateFunctions' => $this->get('query_constructor.creator')->getAggregateFunctionTitles(),
         ]);
     }
 
     /**
-     * @Route("/query_constructor/properties/", name="informika.query_constructor.properties")
+     * @Route("/fod_query_constructor/properties/", name="fod.query_constructor.properties")
      *
      * @param Request $request
      *

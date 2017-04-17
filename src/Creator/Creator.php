@@ -39,13 +39,12 @@ class Creator
     /**
      * @param EntityManagerInterface $em
      * @param ProviderRegistry $registry
-     * @param Joiner $joiner
      */
-    public function __construct(EntityManagerInterface $em, Registry $registry, Joiner $joiner)
+    public function __construct(EntityManagerInterface $em, Registry $registry)
     {
         $this->em = $em;
         $this->registry = $registry;
-        $this->joiner = $joiner;
+        $this->joiner = new Joiner($em, $registry);
     }
 
     /**
@@ -59,6 +58,20 @@ class Creator
             static::AGGREGATE_FN_MIN,
             static::AGGREGATE_FN_MAX,
             static::AGGREGATE_FN_AVG,
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getAggregateFunctionTitles()
+    {
+        return [
+            self::AGGREGATE_FN_COUNT => 'Количество',
+            self::AGGREGATE_FN_SUM => 'Суммарное значение',
+            self::AGGREGATE_FN_MIN => 'Минимальное значение',
+            self::AGGREGATE_FN_MAX => 'Максимальное значение',
+            self::AGGREGATE_FN_AVG => 'Среднее значение',
         ];
     }
 

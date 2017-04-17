@@ -36,6 +36,51 @@ class AppKernel extends Kernel
 }
 ```
 
+### Рендер формы конструктора
+
+В папке `/assets` пакета содержатся готовые скомпилированные js-файлы.
+
+#### Минимальная настройка
+
+1. Создать симлинк на папку с js-файлами из публичной папки с js (путь по умолчанию: `/web/assets/js`)
+
+```
+cd /my-project/web/assets/js
+ln -sfn /my-project/vendor/FriendsOfDoctrine/query-constructor/assets query-constructor
+```
+
+2. Отрисовать форму конструктора через шаблонизатор twig
+
+```twig
+{{ fod_query_constructor()|raw }}
+```
+
+#### Указание собственного пути к js-файлу
+
+Передать опцию `scriptPath` со ссылкой на js-файл, который будет использован вместо пути по умолчанию `/web/assets/js`
+
+```twig
+{{ fod_query_constructor({'scriptPath' : '/path/to/myfile.js'})|raw }}
+```
+
+#### Указание HTML-атрибута id корневого элемента конструктора
+
+Передать опцию `htmlId` со строковым значением, которое будет использовано вместо id по умолчанию `fod-query-constructor`
+
+```twig
+{{ fod_query_constructor({'scriptPath' : '/path/to/myfile.js'})|raw }}
+```
+
+#### Указание префикса к генерируемым элементам формы
+
+Передать опцию `prefix` со строковым значением, которое будет использовано в качестве префикса к элементам формы
+
+```twig
+{{ fod_query_constructor({'prefix' : 'form[query]'})|raw }}
+```
+
+В результате атрибут `name` элемента `input` получит значение `form[query][entity]` вместо `entity`
+
 ### Наполнение конструктора сущностями
 
 Все настройки выполняются через аннотации классов и свойств.
@@ -380,13 +425,13 @@ class Room
 Использование (на примере Symfony 2/3)
 --------------------------------------
 
-### Подключение React-компонента
-```javascript
-import QueryConstructor from '../queryConstructor/index'
-...
-<QueryConstructor prefix="myform[field]" {...this.props.queryConstructorProps} />
-...
+### Рендер формы конструктора через шаблонизатор Twig
+
+```twig
+{{ fod_query_constructor()|raw }}
 ```
+
+Параметры запроса записываются в скрытый input с именем `sqlConstructor` (к имени можно добавить префикс - см. настройку рендера выше)
 
 ### Получение QueryBuilder из запроса
 ```php
@@ -457,21 +502,36 @@ $queryBuilder = $this->get('query_constructor.serializer')->unserialize(stripsla
 Бэкенд конструктора запросов, регистрация сервисов для Symfony
 
 #### Роуты прилагаемого контроллера для конструктора
-* informika.query_constructor.entities - список сущностей для выборки
-* informika.query_constructor.properties - информация по выбранной сущности (свойства для выборки, фильтров, возможные связи)
+* fod.query_constructor.index - начальные данные для конструктора
+* fod.query_constructor.properties - информация по выбранной сущности (свойства для выборки, фильтров, возможные связи)
 
 ### Client
 
-React-компонент конструктора запросов
+Фронтенд-часть конструктора.
 
-#### Установка
+Альтернативы использования:
+
+1. Скомпилированные файлы - расположены в папке `/assets` проекта (настройка файлов см. выше)
+2. Подключение React-компонента к приложению проекта (см.ниже)
+
+####React-компонент конструктора запросов
+
+##### Установка
 1. Выполнить `npm install` в корневой папке пакета query-constructor
 2. Добавить в конфигурацию загрузчика babel путь к query-constructor/client
 3. Создать symlink на query-constructor/client в папке с исходниками React основного проекта
-4. В компоненте проекта импортировать компонент `QueryConstructor` из index.js
+4. В компоненте проекта импортировать компонент `QueryConstructor` из QueryConstructor.js
 5. Пересобрать js с новым компонентом сборщиком, используемым на проекте
 
-#### Настройка QueryConstructor
+##### Подключение React-компонента к проекту
+```javascript
+import QueryConstructor from '../queryConstructor/QueryConstructor'
+...
+<QueryConstructor prefix="myform[field]" {...this.props.queryConstructorProps} />
+...
+```
+
+##### Настройка QueryConstructor
 Требуются следующие параметры:
 
 * **aggregateFunctions** - *required* {'имяКласса': 'Название'} - заполняет список аггрегирующих функций для выборки

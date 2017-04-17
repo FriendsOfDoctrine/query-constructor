@@ -1,0 +1,32 @@
+{% if scriptPath is not defined %}
+    {% set env = app.request.query.get('env', app.environment) %}
+    {% set scriptPath = '/assets/js/query-constructor/' ~ (env == 'dev'
+            ? 'fod.query-constructor.dev.js'
+            : 'fod.query-constructor.js'
+    ) %}
+{% endif %}
+{% if htmlId is not defined %}
+    {% set htmlId = 'fod-query-constructor' %}
+{% endif %}
+
+<div id="{{ htmlId }}"></div>
+
+<script type="text/javascript" src="{{ asset(scriptPath) }}"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        var response = {{ render(controller('QueryConstructorBundle:Default:index')) }};
+        var entities, aggregateFunctions;
+        if (response.result && response.result === 'success') {
+            entities = response.entities;
+            aggregateFunctions = response.aggregateFunctions;
+        }
+
+        window.fodQueryConstructor && window.fodQueryConstructor({
+            selector: '#{{ htmlId }}',
+            entities: entities,
+            aggregateFunctions: aggregateFunctions,
+            prefix: '{{ prefix|default('') }}',
+            propertiesUrl: '{{ path('fod.query_constructor.properties') }}',
+        });
+    });
+</script>

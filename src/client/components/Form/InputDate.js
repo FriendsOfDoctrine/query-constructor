@@ -7,7 +7,7 @@ class InputDate extends Component {
       {...this.props}
       ref={
         (input) => {
-          if (input) {
+          if (input && window.jQuery && window.jQuery(input.inputElement).datepicker) {
             window.jQuery(input.inputElement).datepicker({
                 format: (this.props.dateFormat || 'yyyy-mm-dd')
             }).off('changeDate').on('changeDate', function () {

@@ -1,41 +1,31 @@
-import React, { Component } from 'react'
+import React from 'react'
+import { render } from 'react-dom'
 import { Provider } from 'react-redux'
-import SqlConstructor from './containers/SqlConstructor'
+import QueryConstructor from './QueryConstructor'
 import configureStore from './redux/store/configureStore'
-import reducer from './redux/modules/reducer'
-import { clone } from './util/helpers'
 
-function makeStateFromProps(props) {
-  let initialState = reducer();
+const old = window.fodQueryConstructor;
+const QueryConstructorContainer = function (options) {
+  let opts = Object.assign({}, defaults, options);
+  const selector = opts.selector;
+  delete opts.selector;
+  render(
+    <QueryConstructor {...opts} />,
+    document.querySelector(selector)
+  );
+};
 
-  initialState.select.data.aggregates = clone(props.aggregateFunctions) || {'': 'Ошибка загрузки'};
-  initialState.select.data.entities = clone(props.entities) || {'': 'Ошибка загрузки'};
-  initialState.select.values.aggregateFn = props.aggregateFunctions ? Object.keys(props.aggregateFunctions)[0] : '';
-  initialState.api.url = props.propertiesUrl || '';
-  return initialState;
-}
+window.fodQueryConstructor = QueryConstructorContainer;
 
-class QueryConstructor extends Component {
-  constructor(props) {
-    super(props);
+window.fodQueryConstructor.noConflict = function () {
+  window.fodQueryConstructor.datepicker = old;
+  return this;
+};
 
-    this.store = configureStore(makeStateFromProps(props));
-
-    if (module.hot) {
-      module.hot.accept('./redux/modules/reducer', () => {
-        const nextReducer = require('./redux/modules/reducer').default;
-        this.store.replaceReducer(nextReducer);
-      });
-    }
-  }
-
-  render() {
-    return (
-      <Provider store={this.store}>
-        <SqlConstructor prefix={this.props.prefix} />
-      </Provider>
-    );
-  }
-}
-
-export default QueryConstructor;
+const defaults = window.fodQueryConstructor.defaults = {
+  'selector': '#fod-query-constructor',
+  'prefix': '',
+  'aggregateFunctions': {'': 'Ошибка загрузки'},
+  'enities': {'': 'Ошибка загрузки'},
+  'propertiesUrl': '',
+};

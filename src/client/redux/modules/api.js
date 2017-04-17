@@ -1,5 +1,6 @@
 import callApi from '../../util/apiCaller'
 import { clone } from '../../util/helpers'
+import Promise from 'es6-promise'
 
 const LOAD = 'queryConstructor/api/LOAD';
 const LOAD_SUCCESS = 'queryConstructor/api/LOAD_SUCCESS';
