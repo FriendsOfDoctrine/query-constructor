@@ -87,7 +87,14 @@ class Creator
             $dateReport = new \DateTime();
         }
         $doc = json_decode($value, true);
-        $comparableOperators = ['>', '<', '=', '<=', '>='];
+        $comparableOperators = [
+            QueryCondition::OPERATOR_TYPE_EQUALS,
+            QueryCondition::OPERATOR_TYPE_NOT_EQUALS,
+            QueryCondition::OPERATOR_TYPE_LESS_THAN,
+            QueryCondition::OPERATOR_TYPE_LESS_THAN_OR_EQUALS,
+            QueryCondition::OPERATOR_TYPE_MORE_THAN,
+            QueryCondition::OPERATOR_TYPE_MORE_THAN_OR_EQUALS,
+        ];
 
         if (is_null($doc)) {
             throw new CreatorException('Expected valid json document.');
@@ -149,7 +156,7 @@ class Creator
             $conditionValue = $condition->getValue();
             $paramType = $entityMetaData->getTypeOfField($condition->getProperty());
 
-            if (in_array($condition->getOperator(), ['IN', 'NOT IN'])) {
+            if (in_array($condition->getOperator(), [QueryCondition::OPERATOR_TYPE_IN, QueryCondition::OPERATOR_TYPE_NOT_IN])) {
                 if (!is_array($conditionValue)) {
                     throw new CreatorException(
                         sprintf('Condition for the property "%s" must has "value" property of type array.',
@@ -176,6 +183,9 @@ class Creator
 
                     $qb->{$qbMethod}(sprintf('%s.%s %s (%s)', $entityAlias, $condition->getProperty(), $condition->getOperator(), $paramName));
                 }
+            } else if (in_array($condition->getOperator(), [QueryCondition::OPERATOR_TYPE_LIKE, QueryCondition::OPERATOR_TYPE_NOT_LIKE])) {
+                $qb->{$qbMethod}(sprintf('%s.%s %s %s', $entityAlias, $condition->getProperty(), $condition->getOperator(), $paramName));
+                $conditionValue = '%' . $conditionValue . '%';
             } else if (in_array($condition->getOperator(), $comparableOperators)) {
                 $qb->{$qbMethod}(sprintf('%s.%s %s %s', $entityAlias, $condition->getProperty(), $condition->getOperator(), $paramName));
             } else {

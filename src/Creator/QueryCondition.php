@@ -19,6 +19,8 @@ class QueryCondition
     const OPERATOR_TYPE_LESS_THAN_OR_EQUALS = '<=';
     const OPERATOR_TYPE_IN = 'IN';
     const OPERATOR_TYPE_NOT_IN = 'NOT IN';
+    const OPERATOR_TYPE_LIKE = 'LIKE';
+    const OPERATOR_TYPE_NOT_LIKE = 'NOT LIKE';
 
     /**
      * @var string
@@ -69,8 +71,10 @@ class QueryCondition
             self::OPERATOR_TYPE_LESS_THAN_OR_EQUALS,
             self::OPERATOR_TYPE_IN,
             self::OPERATOR_TYPE_NOT_IN,
+            self::OPERATOR_TYPE_LIKE,
+            self::OPERATOR_TYPE_NOT_LIKE,
         ])) {
-            throw new CreatorException(sprintf('Bad condition operator given: %s', $type));
+            throw new CreatorException(sprintf('Bad condition operator given: %s', $operator));
         }
 
         $this->type = $type;
