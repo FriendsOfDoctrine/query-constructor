@@ -68,7 +68,7 @@ ln -sfn /my-project/vendor/FriendsOfDoctrine/query-constructor/assets query-cons
 Передать опцию `htmlId` со строковым значением, которое будет использовано вместо id по умолчанию `fod-query-constructor`
 
 ```twig
-{{ fod_query_constructor({'scriptPath' : '/path/to/myfile.js'})|raw }}
+{{ fod_query_constructor({'htmlId' : 'custom-constructor-id'})|raw }}
 ```
 
 #### Указание префикса к генерируемым элементам формы
