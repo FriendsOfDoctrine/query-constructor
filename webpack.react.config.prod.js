@@ -25,7 +25,8 @@ module.exports = {
         include: resolve(__dirname, './src/client'),
         loader: 'babel',
         exclude: /node_modules/
-      }
+      },
+      { test: /\.css$/, loader: "style-loader!css-loader" }
     ]
   },
   plugins: [

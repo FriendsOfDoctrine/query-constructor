@@ -1,6 +1,7 @@
 import { clone } from '../../util/helpers'
 import { load } from './api'
 import { uniqueId } from 'lodash'
+import moment from 'moment'
 
 const CLEAR_ALL = 'queryConstructor/where/CLEAR_ALL';
 const ADD = 'queryConstructor/where/ADD';
@@ -37,7 +38,7 @@ const propertyTypes = {
     },
     defaultValues: {
       compareFunction: '=',
-      compareValue: '',
+      compareValue: moment().format('YYYY-MM-DD'),
     },
   },
   'string': {
