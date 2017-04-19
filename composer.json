@@ -1,5 +1,5 @@
 {
-    "name": "friends-of-doctrine/query-constructor",
+    "name": "friendsofdoctrine/query-constructor",
     "description": "GUI & serializer for Doctrine ORM QueryBuilder",
     "keywords": ["doctrine"],
     "type": "library",
