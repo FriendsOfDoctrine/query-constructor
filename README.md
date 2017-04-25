@@ -5,7 +5,7 @@ query-constructor
 
 Входят следующие инструменты:
 
-* Bundle - бандл Symfony3, бэкенд конструктора
+* Bundle - бандл Symfony, бэкенд конструктора
 * client - фронтенд конструктора на React-Redux
 * Creator - сервис по созданию экземплярыа QueryBuilder
 * Serializer - сервис по сериализации-десериализации QueryBuilder
@@ -13,26 +13,26 @@ query-constructor
 Требования
 ----------
 
-Doctrine/ORM 2.5+
+Symfony 2.8+
 
 Подключение к проекту (на примере Symfony 2/3)
 ----------------------------------------------
 
 ### Регистрация бандла QueryConstructorBundle
 ```php
-// /your-project/app/AppKernel.php
-// ...
+# app/AppKernel.php
+
 class AppKernel extends Kernel
 {
     public function registerBundles()
     {
         $bundles = [
-            // ...
+            ...
             new FOD\QueryConstructor\Bundle\QueryConstructorBundle(),
         ];
-        // ...
+        ...
     }
-// ...
+...
 }
 ```
 
@@ -57,8 +57,8 @@ fod_query_constructor:
 1. Создать симлинк на папку с js-файлами из публичной папки с js (путь по умолчанию: `/web/assets/js`)
 
 ```
-cd /my-project/web/assets/js
-ln -sfn /my-project/vendor/FriendsOfDoctrine/query-constructor/assets query-constructor
+cd web/assets/js
+ln -sfn ../../../vendor/friendsofdoctrine/query-constructor/assets query-constructor
 ```
 
 2. Отрисовать форму конструктора через шаблонизатор twig
@@ -66,6 +66,8 @@ ln -sfn /my-project/vendor/FriendsOfDoctrine/query-constructor/assets query-cons
 ```twig
 {{ fod_query_constructor()|raw }}
 ```
+
+функция `fod_query_constructor` 
 
 #### Указание собственного пути к js-файлу
 

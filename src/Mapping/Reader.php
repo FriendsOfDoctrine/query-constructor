@@ -47,30 +47,33 @@ class Reader
      */
     public function getClassMetaData(OrmClassMetadata $metaData)
     {
-        $reflection = $metaData->getReflectionClass();
-        $entityMetadata = $this->reader->getClassAnnotation(
-            $reflection,
-            Entity::CLASSNAME
-        );
-        if (!$entityMetadata) {
-            return null;
+        /** @var Entity $entityMetadata */
+        if ($entityMetadata = $this->reader->getClassAnnotation($metaData->getReflectionClass(), Entity::CLASSNAME)) {
+
+            $classMetadata = new ClassMetadata($metaData->getReflectionClass()->getName(), $entityMetadata);
+            $properties = $metaData->getReflectionProperties();
+
+            $classMetadata->setAggregatableProperties($this->fetchProperties($metaData,
+                $this->filterOnlyExcept(
+                    $properties,
+                    array_reduce($metaData->fieldMappings, function ($properties, $property) {
+                        if (in_array($property['type'], [Type::INTEGER, Type::SMALLINT, Type::BIGINT, Type::FLOAT, Type::DECIMAL, Type::BINARY], true)) {
+                            $properties[] = $property['fieldName'];
+                        }
+                        return $properties;
+                    }),
+                    $entityMetadata->getAggregatableFieldsExcept()
+                )
+            ));
+
+            $classMetadata->setProperties($this->fetchProperties($metaData, $properties));
+
+            $classMetadata->setJoins($this->makeJoins($metaData));
+
+            return $classMetadata;
         }
-        $classMetadata = new ClassMetadata($reflection->getName(), $entityMetadata);
-        $properties = $metaData->getReflectionProperties();
 
-        $aggregatableProperties = $this->filterOnlyExcept(
-            $properties,
-            $entityMetadata->getAggregatableFields() ?: $metaData->getIdentifierFieldNames(),
-            $entityMetadata->getAggregatableFieldsExcept()
-        );
-        $classMetadata->setAggregatableProperties($this->fetchProperties($metaData, $aggregatableProperties));
-
-        $filterableProperties = $this->filterOnlyExcept($properties, $entityMetadata->getFilterableFields(), $entityMetadata->getFilterableFieldsExcept());
-        $classMetadata->setProperties($this->fetchProperties($metaData, $filterableProperties));
-
-        $classMetadata->setJoins($this->makeJoins($metaData));
-
-        return $classMetadata;
+        return null;
     }
 
     /**
