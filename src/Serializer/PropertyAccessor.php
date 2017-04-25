@@ -76,15 +76,15 @@ class PropertyAccessor
     {
         if ($accessor = $this->getPublicProperty($name)) {
             return $this->object->{$accessor};
-        } elseif ($accessor = $this->getFirstPublicMethod($name, ['get', 'is', 'has'])) {
-            return $this->object->{$accessor}();
-        } else {
-            throw new \BadMethodCallException(sprintf(
-                'Class "%s" has neither property nor accessor "%s"',
-                get_class($this->object),
-                $name
-            ));
         }
+        if ($accessor = $this->getFirstPublicMethod($name, ['get', 'is', 'has'])) {
+            return $this->object->{$accessor}();
+        }
+        throw new \BadMethodCallException(sprintf(
+            'Class "%s" has neither property nor accessor "%s"',
+            get_class($this->object),
+            $name
+        ));
     }
 
     /**

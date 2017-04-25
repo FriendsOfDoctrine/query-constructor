@@ -38,7 +38,7 @@ class Creator
 
     /**
      * @param EntityManagerInterface $em
-     * @param ProviderRegistry $registry
+     * @param Registry $registry
      */
     public function __construct(EntityManagerInterface $em, Registry $registry)
     {
@@ -96,12 +96,12 @@ class Creator
             QueryCondition::OPERATOR_TYPE_MORE_THAN_OR_EQUALS,
         ];
 
-        if (is_null($doc)) {
+        if (null === $doc) {
             throw new CreatorException('Expected valid json document.');
         }
 
         if (!isset($doc['aggregateFunction'])
-            || !in_array($doc['aggregateFunction'], $this->getAggregateFunctions())) {
+            || !in_array($doc['aggregateFunction'], $this->getAggregateFunctions(), true)) {
             throw new CreatorException(sprintf(
                 'Document must contain property "aggregateFunction" with one of this values: %s.',
                 implode($this->getAggregateFunctions(), ',')

@@ -91,13 +91,9 @@ class Reader
      */
     protected function filterOnly(array $properties, array $names = null)
     {
-        if ($names) {
-            return array_filter($properties, function (\ReflectionProperty $property) use ($names) {
-                return in_array($property->getName(), $names);
-            });
-        } else {
-            return $properties;
-        }
+        return $names ? array_filter($properties, function (\ReflectionProperty $property) use ($names) {
+            return in_array($property->getName(), $names, true);
+        }) : $properties;
     }
 
     /**
@@ -107,13 +103,9 @@ class Reader
      */
     protected function filterExcept(array $properties, array $names = null)
     {
-        if ($names) {
-            return array_filter($properties, function (\ReflectionProperty $property) use ($names) {
-                return !in_array($property->getName(), $names);
-            });
-        } else {
-            return $properties;
-        }
+        return $names ? array_filter($properties, function (\ReflectionProperty $property) use ($names) {
+            return !in_array($property->getName(), $names, true);
+        }) : $properties;
     }
 
     /**
@@ -193,7 +185,7 @@ class Reader
                 if ($fieldName === $valueField) {
                     continue;
                 }
-                if (in_array($referencedMetadata->getTypeOfField($fieldName), [Type::STRING, Type::TEXT])) {
+                if (in_array($referencedMetadata->getTypeOfField($fieldName), [Type::STRING, Type::TEXT], true)) {
                     $titleField = $fieldName;
                     break;
                 }
@@ -258,7 +250,7 @@ class Reader
      */
     protected function getAssociations(OrmClassMetadata $metadata)
     {
-        if (is_null($this->associations)) {
+        if (null === $this->associations) {
             $this->associations = [];
             foreach ($metadata->getAssociationMappings() as $field => $mapping) {
                 if (!$mapping['isOwningSide']) {

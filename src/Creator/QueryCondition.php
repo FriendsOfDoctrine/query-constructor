@@ -58,7 +58,7 @@ class QueryCondition
             self::CONDITION_TYPE_AND,
             self::CONDITION_TYPE_OR,
             self::CONDITION_TYPE_NONE
-        ])) {
+        ], true)) {
             throw new CreatorException(sprintf('Bad condition type given: %s', $type));
         }
 
@@ -73,7 +73,7 @@ class QueryCondition
             self::OPERATOR_TYPE_NOT_IN,
             self::OPERATOR_TYPE_LIKE,
             self::OPERATOR_TYPE_NOT_LIKE,
-        ])) {
+        ], true)) {
             throw new CreatorException(sprintf('Bad condition operator given: %s', $operator));
         }
 

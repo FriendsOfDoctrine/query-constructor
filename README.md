@@ -36,6 +36,18 @@ class AppKernel extends Kernel
 }
 ```
 
+### Конфигурируем роутинг
+
+```yml
+# app/config/routing.yml
+...
+fod_query_constructor:
+    resource: "@QueryConstructorBundle/Controller/DefaultController.php"
+    type:     annotation
+    prefix:   /fod
+
+```
+
 ### Рендер формы конструктора
 
 В папке `/assets` пакета содержатся готовые скомпилированные js-файлы.

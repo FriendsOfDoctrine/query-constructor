@@ -4,6 +4,7 @@ namespace FOD\QueryConstructor\Metadata;
 
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use FOD\QueryConstructor\Mapping\Reader;
 
 /**
@@ -53,11 +54,12 @@ class DoctrineDiscovery
 
     /**
      * @param string $className
-     * @return FOD\QueryConstructor\Mapping\ClassMetadata
+     * @return \FOD\QueryConstructor\Mapping\ClassMetadata
      */
     public function getClassMetaData($className)
     {
         $ormClassMetadata = $this->em->getMetadataFactory()->getMetadataFor($className);
+
         return $this->reader->getClassMetaData($ormClassMetadata);
     }
 }

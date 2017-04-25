@@ -12,9 +12,9 @@ class QueryConstructorExtension extends \Twig_Extension
     public function getFunctions()
     {
         return [
-            'fod_query_constructor' => new \Twig_Function_Method(
-                $this,
-                'render',
+            'fod_query_constructor' => new \Twig_SimpleFunction(
+                'fod_query_constructor',
+                [$this, 'render'],
                 ['needs_environment' => true]
             ),
         ];
@@ -22,6 +22,9 @@ class QueryConstructorExtension extends \Twig_Extension
 
     /**
      * @param \Twig_Environment $environment
+     * @param array $options
+     * @param string $template
+     * @return string
      */
     public function render(\Twig_Environment $environment, $options = [], $template = 'QueryConstructorBundle::default.html.twig')
     {

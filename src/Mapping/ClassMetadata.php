@@ -120,10 +120,7 @@ class ClassMetadata
     protected function getClassBaseName($className)
     {
         $lastNamespacePos = strrpos($className, '\\');
-        if ($lastNamespacePos === false) {
-            return $className;
-        } else {
-            return substr($className, $lastNamespacePos + 1);
-        }
+
+        return false === $lastNamespacePos ? $className : substr($className, $lastNamespacePos + 1);
     }
 }

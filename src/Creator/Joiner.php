@@ -20,7 +20,7 @@ class Joiner
     protected $baseEntityMetadataProvider;
 
     /**
-     * @var EntityManagerInterfaceInterface
+     * @var EntityManagerInterface
      */
     protected $em;
 
@@ -182,6 +182,6 @@ class Joiner
      */
     protected function alreadyJoined(QueryBuilder $qb, $entityAlias)
     {
-        return in_array($entityAlias, $qb->getAllAliases());
+        return in_array($entityAlias, $qb->getAllAliases(), true);
     }
 }
