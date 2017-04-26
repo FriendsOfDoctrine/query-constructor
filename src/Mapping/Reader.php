@@ -249,31 +249,37 @@ class Reader
 
     /**
      * @param OrmClassMetadata $metadata
+     *
      * @return array
      */
     protected function getAssociations(OrmClassMetadata $metadata)
     {
-        if (null === $this->associations) {
-            $this->associations = [];
-            foreach ($metadata->getAssociationMappings() as $field => $mapping) {
-                if (!$mapping['isOwningSide']) {
-                    continue;
-                }
-                $targetClassName = $mapping['targetEntity'];
-                $ormClassMetadata = $this->em->getMetadataFactory()->getMetadataFor($targetClassName);
-
-                $entityMetadata = $this->reader->getClassAnnotation(
-                    $ormClassMetadata->getReflectionClass(),
-                    Entity::CLASSNAME
-                );
-
-                $this->associations[$field] = [
-                    'qcMetadata' => $entityMetadata,
-                    'targetEntity' => $targetClassName,
-                ];
-            }
+        if (isset($this->associations[$metadata->name])) {
+            return $this->associations[$metadata->name];
         }
-        return $this->associations;
+
+        $this->associations[$metadata->name] = [];
+
+        foreach ($metadata->getAssociationMappings() as $field => $mapping) {
+            if (!$mapping['isOwningSide']) {
+                continue;
+            }
+            $targetClassName = $mapping['targetEntity'];
+            $ormClassMetadata = $this->em->getMetadataFactory()->getMetadataFor($targetClassName);
+
+            $entityMetadata = $this->reader->getClassAnnotation(
+                $ormClassMetadata->getReflectionClass(),
+                Entity::CLASSNAME
+            );
+
+            $this->associations[$metadata->name][$field] = [
+                'qcMetadata' => $entityMetadata,
+                'targetEntity' => $targetClassName,
+                'assotiationWith' => $this->getAssociations($ormClassMetadata),
+            ];
+        }
+
+        return $this->associations[$metadata->name];
     }
 
     /**
