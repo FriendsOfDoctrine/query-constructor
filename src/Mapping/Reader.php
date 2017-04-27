@@ -25,7 +25,7 @@ class Reader
     protected $reader;
 
     /**
-     * @var array
+     * @var AssociationMetaData[][]
      */
     protected $associations;
 
@@ -125,7 +125,7 @@ class Reader
     {
         $result = [];
         foreach ($properties as $property) {
-            if (!isset($this->getAssociations($metadata)[$property->getName()]['qcMetadata'])) {
+            if (!isset($this->getAssociations($metadata)[$property->getName()])) {
                 $result[$property->getName()] = $this->makePropertyFromReflection($metadata, $property);
             }
         }
@@ -281,11 +281,7 @@ class Reader
                 Entity::CLASSNAME
             );
 
-            $this->associations[$metadata->name][$field] = [
-                'qcMetadata' => $entityMetadata,
-                'targetEntity' => $targetClassName,
-                'assotiationWith' => $this->getAssociations($ormClassMetadata),
-            ];
+            $this->associations[$metadata->name][$field] = new AssociationMetaData($targetClassName, $entityMetadata, $this->getAssociations($ormClassMetadata));
         }
 
         return $this->associations[$metadata->name];
@@ -301,13 +297,18 @@ class Reader
         $result = [];
 
         $joinableAssociations = array_filter($this->getAssociations($metadata), function ($association) {
-            return $association['qcMetadata'];
+            /** @var AssociationMetaData $association */
+            return $association->getEntityMetadata();
         });
 
+        /**
+         * @var string $propertyName
+         * @var AssociationMetaData $association
+         */
         foreach ($joinableAssociations as $propertyName => $association) {
-            $result[$association['targetEntity']] = $propertyName;
+            $result[$association->getTargetEntity()] = $propertyName;
 
-            $result = array_merge($result, $this->getRelatedJoins($association['targetEntity']));
+            $result = array_merge($result, $this->getRelatedJoins($association->getTargetEntity()));
         }
 
         return $result;
@@ -322,9 +323,13 @@ class Reader
     {
         $relatedEntities = [];
         if (isset($this->associations[$className]) && !empty($this->associations[$className])) {
+            /**
+             * @var string $propertyName
+             * @var AssociationMetaData $association
+             */
             foreach ($this->associations[$className] as $propertyName => $association) {
-                $relatedEntities[$association['targetEntity']] = $propertyName;
-                $relatedEntities = array_merge($relatedEntities, $this->getRelatedJoins($association['targetEntity']));
+                $relatedEntities[$association->getTargetEntity()] = $propertyName;
+                $relatedEntities = array_merge($relatedEntities, $this->getRelatedJoins($association->getTargetEntity()));
             }
         }
 
