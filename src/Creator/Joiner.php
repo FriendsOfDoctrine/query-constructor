@@ -79,6 +79,15 @@ class Joiner
                 get_class($this->baseEntityMetadataProvider)
             ));
         }
+
+        /** @var string $propertyJoin */
+        $propertyJoin = $this->baseEntityMetadataProvider->getJoins()[$entityClass];
+
+        $crossingJoins = $this->getCrossingJoins(current($qb->getRootEntities()), array_flip($this->baseEntityMetadataProvider->getJoins())[$propertyJoin], $propertyJoin);
+        foreach ($crossingJoins as $crossingJoin) {
+            $this->join($qb, $crossingJoin, $dateReport);
+        }
+
         if (!$dateReport) {
             $dateReport = new \DateTime();
         }
@@ -111,7 +120,7 @@ class Joiner
             $entityAlias = $this->makeJoin(
                 $qb,
                 $entityClass,
-                $this->getEntityAlias($this->baseEntityMetadataProvider->getEntityClass()),
+                $this->getEntityAlias($crossingJoins ? end($crossingJoins) : $this->baseEntityMetadataProvider->getEntityClass()),
                 $relation,
                 $this->baseEntityMetadataProvider->getEntity()->getDateBetween(),
                 $dateReport
@@ -119,6 +128,32 @@ class Joiner
         }
 
         return $entityAlias;
+    }
+
+    /**
+     * @param $targetClass
+     * @param $dstClass
+     * @param $dstProp
+     *
+     * @return array|mixed
+     */
+    protected function getCrossingJoins($targetClass, $dstClass, $dstProp)
+    {
+        $joins = [];
+
+        $ormMetadata = $this->em->getClassMetadata($targetClass);
+
+        foreach ($ormMetadata->associationMappings as $mapping) {
+            if ($mapping['targetEntity'] !== $dstClass) {
+                $dstOrmMetadata = $this->em->getClassMetadata($mapping['targetEntity']);
+                $joins[] = [$mapping['targetEntity']];
+                if (!isset($dstOrmMetadata->associationMappings[$dstProp])) {
+                    $joins[] = $this->getCrossingJoins($mapping['targetEntity'], $dstClass, $dstProp);
+                }
+            }
+        }
+
+        return $joins ? call_user_func_array('array_merge', $joins) : [];
     }
 
     /**
@@ -152,20 +187,20 @@ class Joiner
         $withCondition = $dateBetween
             ? sprintf(
                 '%1$s.%2$s = %3$s.%4$s AND (:joinReportDate BETWEEN %3$s.%5$s AND %3$s.%6$s)',
-                    $entityBaseAlias,
-                    $referenceKey,
-                    $entityAlias,
-                    $id[0],
-                    $dateBetween[0],
-                    $dateBetween[1]
-                )
+                $entityBaseAlias,
+                $referenceKey,
+                $entityAlias,
+                $id[0],
+                $dateBetween[0],
+                $dateBetween[1]
+            )
             : sprintf(
                 '%1$s.%2$s = %3$s.%4$s',
-                    $entityBaseAlias,
-                    $referenceKey,
-                    $entityAlias,
-                    $id[0]
-                );
+                $entityBaseAlias,
+                $referenceKey,
+                $entityAlias,
+                $id[0]
+            );
 
         $qb->join($entityClass, $entityAlias, Join::WITH, $withCondition);
         if ($dateBetween && !$qb->getParameter('joinReportDate')) {

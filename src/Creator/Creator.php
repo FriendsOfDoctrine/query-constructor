@@ -150,6 +150,7 @@ class Creator
             }
 
             $condition = $this->parseCondition($rawCondition);
+
             $qbMethod = $this->getQueryBuilderMethod($condition);
 
             $paramName = ':val'.$i;

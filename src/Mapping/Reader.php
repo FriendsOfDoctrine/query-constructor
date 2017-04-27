@@ -43,6 +43,7 @@ class Reader
 
     /**
      * @param OrmClassMetadata $metaData
+     *
      * @return ClassMetadata|null
      */
     public function getClassMetaData(OrmClassMetadata $metaData)
@@ -80,6 +81,7 @@ class Reader
      * @param array $properties
      * @param array $only
      * @param array $except
+     *
      * @return array
      */
     protected function filterOnlyExcept(array $properties, array $only, array $except)
@@ -90,6 +92,7 @@ class Reader
     /**
      * @param array $properties
      * @param array $names
+     *
      * @return array
      */
     protected function filterOnly(array $properties, array $names = null)
@@ -102,6 +105,7 @@ class Reader
     /**
      * @param array $properties
      * @param array $names
+     *
      * @return array
      */
     protected function filterExcept(array $properties, array $names = null)
@@ -114,6 +118,7 @@ class Reader
     /**
      * @param OrmClassMetadata $metadata
      * @param array $properties
+     *
      * @return array
      */
     protected function fetchProperties(OrmClassMetadata $metadata, array $properties)
@@ -131,6 +136,7 @@ class Reader
     /**
      * @param OrmClassMetadata $metadata
      * @param \ReflectionProperty $property
+     *
      * @return Property
      */
     protected function makePropertyFromReflection(OrmClassMetadata $metadata, \ReflectionProperty $property)
@@ -175,6 +181,7 @@ class Reader
      * @param string $propertyName
      * @param string $targetClassName
      * @param string $titleField
+     *
      * @return array
      * @throws \LogicException
      */
@@ -204,6 +211,7 @@ class Reader
      * @param string $className
      * @param string $valueField
      * @param string $titleField
+     *
      * @return array
      */
     protected function loadChoices($className, $valueField, $titleField)
@@ -227,6 +235,7 @@ class Reader
 
     /**
      * @param string $propertyType
+     *
      * @return string
      */
     protected function mapPropertyTypeFromDoctrine($propertyType)
@@ -284,6 +293,7 @@ class Reader
 
     /**
      * @param OrmClassMetadata $metadata
+     *
      * @return array
      */
     protected function makeJoins(OrmClassMetadata $metadata)
@@ -296,8 +306,28 @@ class Reader
 
         foreach ($joinableAssociations as $propertyName => $association) {
             $result[$association['targetEntity']] = $propertyName;
+
+            $result = array_merge($result, $this->getRelatedJoins($association['targetEntity']));
         }
 
         return $result;
+    }
+
+    /**
+     * @param $className
+     *
+     * @return array
+     */
+    protected function getRelatedJoins($className)
+    {
+        $relatedEntities = [];
+        if (isset($this->associations[$className]) && !empty($this->associations[$className])) {
+            foreach ($this->associations[$className] as $propertyName => $association) {
+                $relatedEntities[$association['targetEntity']] = $propertyName;
+                $relatedEntities = array_merge($relatedEntities, $this->getRelatedJoins($association['targetEntity']));
+            }
+        }
+
+        return $relatedEntities;
     }
 }
