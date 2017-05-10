@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata as OrmClassMetadata;
+use Doctrine\ORM\Mapping\MappingException;
 use FOD\QueryConstructor\Mapping\Annotation\Entity;
 use FOD\QueryConstructor\Mapping\Annotation\Property;
 
@@ -28,6 +29,9 @@ class Reader
      * @var AssociationMetaData[][]
      */
     protected $associations;
+
+    /** @var array */
+    protected $invertAssociations = [];
 
     /**
      * Constructor
@@ -52,11 +56,10 @@ class Reader
         if ($entityMetadata = $this->reader->getClassAnnotation($metaData->getReflectionClass(), Entity::CLASSNAME)) {
 
             $classMetadata = new ClassMetadata($metaData->getReflectionClass()->getName(), $entityMetadata);
-            $properties = $metaData->getReflectionProperties();
 
             $classMetadata->setAggregatableProperties($this->fetchProperties($metaData,
                 $this->filterOnlyExcept(
-                    $properties,
+                    $metaData->getReflectionProperties(),
                     array_reduce($metaData->fieldMappings, function ($properties, $property) {
                         if (in_array($property['type'], [Type::INTEGER, Type::SMALLINT, Type::BIGINT, Type::FLOAT, Type::DECIMAL, Type::BINARY], true)) {
                             $properties[] = $property['fieldName'];
@@ -67,7 +70,7 @@ class Reader
                 )
             ));
 
-            $classMetadata->setProperties($this->fetchProperties($metaData, $properties));
+            $classMetadata->setProperties($this->fetchProperties($metaData));
 
             $classMetadata->setJoins($this->makeJoins($metaData));
 
@@ -119,14 +122,25 @@ class Reader
      * @param OrmClassMetadata $metadata
      * @param array $properties
      *
-     * @return array
+     * @return Property[]
      */
-    protected function fetchProperties(OrmClassMetadata $metadata, array $properties)
+    protected function fetchProperties(OrmClassMetadata $metadata, array $properties = [])
     {
         $result = [];
+        $oneToMany = [];
+        if (!$properties) {
+            $properties = $metadata->getReflectionProperties();
+        }
+
+        /** @var \ReflectionProperty $property */
         foreach ($properties as $property) {
             if (!isset($this->getAssociations($metadata)[$property->getName()])) {
-                $result[$property->getName()] = $this->makePropertyFromReflection($metadata, $property);
+                $propertyType = null;
+                if (isset($metadata->associationMappings[$property->getName()]) && !isset($metadata->associationMappings[$property->getName()]['joinColumns'])) {
+                    $result['COUNT(' . $property->getName() . ')'] = $this->makePropertyFromReflection($metadata, $property, Property::TYPE_AGGREGATE, 'COUNT(' . $property->getName() . ')');
+                    $propertyType = Property::TYPE_MULTIPLE_CHOICE;
+                }
+                $result[$property->getName()] = $this->makePropertyFromReflection($metadata, $property, $propertyType);
             }
         }
 
@@ -136,10 +150,12 @@ class Reader
     /**
      * @param OrmClassMetadata $metadata
      * @param \ReflectionProperty $property
+     * @param string $propertyType
+     * @param string $propertyTitle
      *
      * @return Property
      */
-    protected function makePropertyFromReflection(OrmClassMetadata $metadata, \ReflectionProperty $property)
+    protected function makePropertyFromReflection(OrmClassMetadata $metadata, \ReflectionProperty $property, $propertyType = null, $propertyTitle = null)
     {
         $propertyMetadata = $this->reader->getPropertyAnnotation($property, Property::CLASSNAME);
         if (!$propertyMetadata) {
@@ -147,26 +163,33 @@ class Reader
         }
 
         if (!$propertyMetadata->title) {
-            $propertyMetadata->title = ucfirst($property->getName());
+            $propertyMetadata->title = $propertyTitle ?: ucfirst($property->getName());
         }
 
-        if (!$propertyMetadata->choices && isset($this->getAssociations($metadata)[$property->getName()]['targetEntity'])) {
+        if (!$propertyMetadata->choices && isset($metadata->associationMappings[$property->getName()])) {
             $titleField = isset($propertyMetadata->titleField) ? $propertyMetadata->titleField : null;
             list($valueField, $titleField) = $this->detectListFields(
                 $metadata,
                 $property->getName(),
-                $this->getAssociations($metadata)[$property->getName()]['targetEntity'],
+                $metadata->associationMappings[$property->getName()]['targetEntity'],
                 $titleField
             );
+
             $propertyMetadata->choices = $this->loadChoices(
-                $this->getAssociations($metadata)[$property->getName()]['targetEntity'],
+                $metadata->associationMappings[$property->getName()]['targetEntity'],
                 $valueField,
                 $titleField
             );
         }
 
         if (!$propertyMetadata->type) {
-            if (is_array($propertyMetadata->choices) && count($propertyMetadata->choices) > 0) {
+
+            if (null !== $propertyType) {
+                if (!in_array($propertyType, Property::getTypes(), true)) {
+                    throw new \InvalidArgumentException('Property type \'' . $propertyType . '\' is not valid');
+                }
+                $propertyMetadata->type = $propertyType;
+            } elseif (is_array($propertyMetadata->choices) && count($propertyMetadata->choices) > 0) {
                 $propertyMetadata->type = Property::TYPE_MULTIPLE_CHOICE;
             } else {
                 $propertyMetadata->type = $this->mapPropertyTypeFromDoctrine($metadata->getTypeOfField($property->getName()));
@@ -187,9 +210,14 @@ class Reader
      */
     protected function detectListFields(OrmClassMetadata $metadata, $propertyName, $targetClassName, $titleField = null)
     {
-        $valueColumn = $metadata->getSingleAssociationReferencedJoinColumnName($propertyName);
         $referencedMetadata = $this->em->getMetadataFactory()->getMetadataFor($targetClassName);
-        $valueField = $referencedMetadata->getFieldName($valueColumn);
+
+        try {
+            $valueField = $referencedMetadata->getFieldName($metadata->getSingleAssociationReferencedJoinColumnName($propertyName));
+        } catch (MappingException $exception) {
+            $valueField = $referencedMetadata->getIdentifierFieldNames();
+        }
+
         if (!$titleField) {
             foreach ($referencedMetadata->getFieldNames() as $fieldName) {
                 if ($fieldName === $valueField) {
@@ -204,6 +232,7 @@ class Reader
                 throw new \LogicException(sprintf('String title field not found in class [%s]. Specify titleField option manually.', $targetClassName));
             }
         }
+
         return [$valueField, $titleField];
     }
 
@@ -217,14 +246,24 @@ class Reader
     protected function loadChoices($className, $valueField, $titleField)
     {
         $resultSet = $this->em->createQueryBuilder()
-            ->select("PARTIAL e.{{$valueField}, {$titleField}}")
+            ->select("PARTIAL e.{" . implode(', ', array_merge([$titleField], (array)$valueField)) . "}")
             ->from($className, 'e')
             ->getQuery()
             ->getArrayResult();
 
         // PHP5.4 support: instead of array_column($resultSet, $titleField, $valueField)
         $resultMapped = array_reduce($resultSet, function (array $result, array $item) use ($valueField, $titleField) {
-            $result[$item[$valueField]] = $item[$titleField];
+            $valueField = (array)$valueField;
+            if (count($valueField) > 1) {
+                $key = [];
+                foreach ($valueField as $vField) {
+                    $key[] = $vField . ':' . $item[$vField];
+                }
+                $result[implode(';', $key)] = $item[$titleField];
+            } else {
+                $result[$item[current($valueField)]] = $item[current($valueField)] . ': ' . $item[$titleField];
+            }
+
             return $result;
         }, []);
 
@@ -271,17 +310,26 @@ class Reader
 
         foreach ($metadata->getAssociationMappings() as $field => $mapping) {
             if (!$mapping['isOwningSide']) {
-                continue;
+                $targetClassName = $mapping['targetEntity'];
+                $ormClassMetadata = $this->em->getMetadataFactory()->getMetadataFor($targetClassName);
+
+                $entityMetadata = $this->reader->getClassAnnotation(
+                    $ormClassMetadata->getReflectionClass(),
+                    Entity::CLASSNAME
+                );
+
+                $this->invertAssociations[$metadata->name][$field] = new AssociationMetaData($targetClassName, $entityMetadata, $this->getAssociations($ormClassMetadata));
+            } else {
+                $targetClassName = $mapping['targetEntity'];
+                $ormClassMetadata = $this->em->getMetadataFactory()->getMetadataFor($targetClassName);
+
+                $entityMetadata = $this->reader->getClassAnnotation(
+                    $ormClassMetadata->getReflectionClass(),
+                    Entity::CLASSNAME
+                );
+
+                $this->associations[$metadata->name][$field] = new AssociationMetaData($targetClassName, $entityMetadata, $this->getAssociations($ormClassMetadata));
             }
-            $targetClassName = $mapping['targetEntity'];
-            $ormClassMetadata = $this->em->getMetadataFactory()->getMetadataFor($targetClassName);
-
-            $entityMetadata = $this->reader->getClassAnnotation(
-                $ormClassMetadata->getReflectionClass(),
-                Entity::CLASSNAME
-            );
-
-            $this->associations[$metadata->name][$field] = new AssociationMetaData($targetClassName, $entityMetadata, $this->getAssociations($ormClassMetadata));
         }
 
         return $this->associations[$metadata->name];

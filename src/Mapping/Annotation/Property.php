@@ -22,6 +22,22 @@ class Property
     const TYPE_DATE = 'date';
     const TYPE_SINGLE_CHOICE = 'single_choice';
     const TYPE_MULTIPLE_CHOICE = 'multiple_choice';
+    const TYPE_AGGREGATE = 'aggregate';
+
+    /**
+     * @return array
+     */
+    static public function getTypes()
+    {
+        return [
+            self::TYPE_STRING,
+            self::TYPE_INTEGER,
+            self::TYPE_DATE,
+            self::TYPE_SINGLE_CHOICE,
+            self::TYPE_MULTIPLE_CHOICE,
+            self::TYPE_AGGREGATE,
+        ];
+    }
 
     /**
      * @var string

@@ -69,7 +69,7 @@ class Registry
      */
     public function getMetadataRegistry()
     {
-        if (is_null($this->metadataRegistry)) {
+        if (null === $this->metadataRegistry) {
             $this->metadataRegistry = $this->discovery->discoverAll();
         }
         return $this->metadataRegistry;
